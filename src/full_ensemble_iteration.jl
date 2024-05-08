@@ -19,12 +19,11 @@ function full_iteration!(m::MaxEnt)
             m.xy_mod[t] += m.s[i] * m.s[j] * Zx
             t += 1
         end
-
-
-
     end
     m.x_mod = m.x_mod / Z
     m.xy_mod = m.xy_mod / Z
+
+    pearson_mod!(m)
 
     return nothing
 end
@@ -88,5 +87,6 @@ function full_iteration!(m::MaxEnt, meas::Bool)
         m.ones_dist_mod ./= sum(m.ones_dist_mod)
     end
 
+    pearson_mod!(m)
     return nothing
 end

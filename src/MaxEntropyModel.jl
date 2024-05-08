@@ -27,8 +27,8 @@ function __init__()
     Memento.register(LOGGER)
 end
 
-include("utilities.jl")
 include("MaxEnt.jl")
+include("utilities.jl")
 include("io_model.jl")
 include("energy.jl")
 include("full_ensemble_iteration.jl")

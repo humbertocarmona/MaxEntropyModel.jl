@@ -2,21 +2,39 @@ function mean_1st_order_moments(M::Matrix{<:Number})
     return mean(M, dims=1)[:]
 end
 
-function mean_2nd_order_moments(M::Matrix{<:Number})
-    MM = M' * M
-    MM /= size(M, 1)
-
+function straighten(M::Matrix{<:Number})
     n = size(M, 2)
     XY = Array{Float64}(undef, div(n * (n - 1), 2))
     t = 1
     @simd for i in 1:n-1
         @simd for j in i+1:n
-            XY[t] = MM[i, j]
+            XY[t] = M[i, j]
             t += 1
         end
     end
-
     return XY
+end
+
+function crunk(arr::Vector{<:Number})
+    n = round(Int64, (1 + sqrt(1 + 8 * length(arr))) / 2)
+    @assert length(arr) == n * (n - 1) ÷ 2 "wrong size array"
+    M = zeros(n, n)
+    t = 1
+    for i in 1:n-1
+        for j in i+1:n
+            M[i, j] = arr[t]
+            M[j, i] = M[i, j]
+            t += 1
+        end
+    end
+    return M
+end
+
+function mean_2nd_order_moments(M::Matrix{<:Number})
+    MM = M' * M
+    MM /= size(M, 1)
+
+    return straighten(MM)
 end
 
 function mean_3rd_order_moments(M::Matrix{<:Number})
@@ -110,4 +128,107 @@ function make_bonds(N::Int64)
         t += 1
     end
     return bond
+end
+
+function map_to_unit_interval(x, xmin, xmax)
+    if xmin > xmax
+        xmax, xmin = xmin, xmax
+    end
+
+    # slope
+    m = 2 / (xmax - xmin)
+    # y-intercept
+    c = -(xmin + xmax) / (xmax - xmin)
+
+    # linear transformation
+    y = m * x .+ c
+
+    # Ensure the output stays within the bounds of -1 to 1
+    return clamp(y, -1, 1)
+end
+
+function centered_moments_obs(m::MaxEnt)
+
+    covariance = zeros(size(m.xy_obs))
+    pearson = zeros(size(m.xy_obs))
+    xy_matrix = zeros(m.nspins, m.nspins)
+    triplets = zeros(size(m.xyz_obs))
+
+    stdev = sqrt(1.0 .- m.x_obs .^ 2)
+    t = 1
+    for i in 1:m.nspins-1
+        for j in i+1:m.nspins
+            covariance[t] = m.xy_obs[t] - m.x_obs[i] * m.x_obs[j]
+            pearson[t] = covariance[t] / (stdev[i] * stdev[j])
+            xy_matrix[i, j] = m.xy_obs[t]
+            xy_matrix[j, i] = xy_matrix[i, j]
+            t += 1
+        end
+    end
+
+    t = 1
+    for i in 1:m.nspins-2
+        for j in i+1:m.nspins-1
+            for k in j+1:m.nspins
+                triplets[t] = (m.xyz_obs[t] - xy_matrix[i, j] * m.x_obs[k] -
+                               xy_matrix[i, k] * m.x_obs[j] -
+                               xy_matrix[j, k] * m.x_obs[i] +
+                               2 * m.x_obs[i] * m.x_obs[j] * m.x_obs[k])
+            end
+        end
+    end
+
+    return covariance, pearson, triplets
+
+end
+
+function centered_moments_mod(m::MaxEnt)
+
+    covariance = zeros(size(m.xy_mod))
+    pearson = zeros(size(m.xy_mod))
+    xy_matrix = zeros(m.nspins, m.nspins)
+    triplets = zeros(size(m.xyz_mod))
+
+    stdev = sqrt(1.0 .- m.x_mod .^ 2)
+    t = 1
+    for i in 1:m.nspins-1
+        for j in i+1:m.nspins
+            covariance[t] = m.xy_mod[t] - m.x_mod[i] * m.x_mod[j]
+            pearson[t] = covariance[t] / (stdev[i] * stdev[j])
+            xy_matrix[i, j] = m.xy_mod[t]
+            xy_matrix[j, i] = xy_matrix[i, j]
+            t += 1
+        end
+    end
+
+    t = 1
+    for i in 1:m.nspins-2
+        for j in i+1:m.nspins-1
+            for k in j+1:m.nspins
+                triplets[t] = (m.xyz_mod[t] - xy_matrix[i, j] * m.x_mod[k] -
+                               xy_matrix[i, k] * m.x_mod[j] -
+                               xy_matrix[j, k] * m.x_mod[i] +
+                               2 * m.x_mod[i] * m.x_mod[j] * m.x_mod[k])
+            end
+        end
+    end
+
+    return covariance, pearson, triplets
+
+end
+
+function pearson_mod!(m::MaxEnt)
+
+    m.pearson_mod = zeros(size(m.xy_mod))
+    s = sqrt.(1.0 .- m.x_mod .^ 2)
+
+    t = 1
+    for i in 1:m.nspins-1
+        for j in i+1:m.nspins
+            m.pearson_mod[t] = (m.xy_mod[t] - m.x_mod[i] * m.x_mod[j]) / (s[i] * s[j])
+            t += 1
+        end
+    end
+
+    return nothing
 end

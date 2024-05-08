@@ -3,31 +3,33 @@ mutable struct MaxEnt
     model::String
     runid::String
 
-    nspins::Int64               # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
-    s::Vector{Int64}            # store nodes states size(N), usually +1 and -1 
-    S_obs::Matrix{Int64}        # the experimental binary matrix
+    nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
+    s::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
+    S_obs::Matrix{Int64}                # the experimental binary matrix
 
-    x_obs::Vector{Float64}      # observed E[si]
-    xy_obs::Vector{Float64}     # observed E[si⋅sj]
-    xyz_obs::Vector{Float64}    # observed E[si⋅sj⋅sk]
-    ones_dist_obs::Vector{Float64}     # observed P[k spins up]
+    x_obs::Vector{Float64}              # observed E[ si ]
+    xy_obs::Vector{Float64}             # observed E[ si⋅sj ]
+    xyz_obs::Vector{Float64}            # observed E[ si⋅sj⋅sk ]
+    pearson_obs::Vector{Float64}        # store observed Pearson correlation coefficient 
+    ones_dist_obs::Vector{Float64}      # observed P[k spins up]
 
-    x_mod::Vector{Float64}      # model computed E[si]
-    xy_mod::Vector{Float64}     # model computed E[si⋅sj]
-    xyz_mod::Vector{Float64}    # model computed E[si⋅sj⋅sk]
-    ones_dist_mod::Vector{Float64}     # model computed P[k spins up]
+    x_mod::Vector{Float64}              # model computed E[si]
+    xy_mod::Vector{Float64}             # model computed E[si⋅sj]
+    xyz_mod::Vector{Float64}            # model computed E[si⋅sj⋅sk]
+    pearson_mod::Vector{Float64}        # store model Pearson correlation coefficient 
+    ones_dist_mod::Vector{Float64}      # model computed P[k spins up]
 
-    h::Vector{Float64}          # model local fields
-    J::Vector{Float64}          # model couplings
+    h::Vector{Float64}                  # model local fields
+    J::Vector{Float64}                  # model couplings
 
-    β::Float64                  # inverse temperature used to train the model
+    β::Float64                          # inverse temperature used to train the model
 
     energy_mean::Float64
     energy_hist::Vector{Float64}
     magnetization_mean::Float64
     specific_heat::Float64
 
-    # Random Laser specific params
+    # Random Laser specific parameters
     λwindow::Vector{<:Number}
     run_type::String
     init_file::String
@@ -60,6 +62,7 @@ mutable struct MaxEnt
 
         model.x_obs = mean_1st_order_moments(S)
         model.xy_obs = mean_2nd_order_moments(S)
+        model.pearson_obs = straighten(cor(S))
         model.xyz_obs = mean_3rd_order_moments(S)
         _, model.ones_dist_obs = ones_distribution(S)
         model.xy_obs[model.xy_obs.==0] .+= 1e-9 # prevent inf relative error calculation
@@ -67,7 +70,7 @@ mutable struct MaxEnt
 
         model.x_mod = zeros(size(model.x_obs))
         model.xy_mod = zeros(size(model.xy_obs))
-
+        model.pearson_mod = zeros(size(model.pearson_obs))
         model.xyz_mod = zeros(size(model.xyz_obs))
         model.ones_dist_mod = zeros(size(model.ones_dist_obs))
 
