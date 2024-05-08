@@ -47,10 +47,10 @@ function read_model(filename::String)
 
     model.β = obj.β
 
-    model.ε = obj.ε
-    model.ε_hist = Vector{Float64}(obj.ε_hist)
-    model.μ = obj.μ
-    model.cv = obj.cv
+    model.energy_mean = obj.energy_mean
+    model.energy_hist = Vector{Float64}(obj.energy_hist)
+    model.magnetization_mean = obj.magnetization_mean
+    model.specific_heat = obj.specific_heat
 
     # Random Laser specific params
     model.λwindow = Vector{Float64}(obj.λwindow)

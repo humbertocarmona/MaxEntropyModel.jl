@@ -22,10 +22,10 @@ mutable struct MaxEnt
 
     β::Float64                  # inverse temperature used to train the model
 
-    ε::Float64                  # average energy
-    ε_hist::Vector{Float64}     # energy histogram
-    μ::Float64                  # average magnetization
-    cv::Float64                 # specific heat
+    energy_mean::Float64
+    energy_hist::Vector{Float64}
+    magnetization_mean::Float64
+    specific_heat::Float64
 
     # Random Laser specific params
     λwindow::Vector{<:Number}
@@ -49,7 +49,7 @@ mutable struct MaxEnt
     t::Int64
 
     function MaxEnt(S::Matrix{Int64}, runid="test")
-        nsamples, nspins = size(S)
+        nspins = size(S, 2)
         model = new()
         model.model = "MaxEnt"
 
@@ -75,10 +75,10 @@ mutable struct MaxEnt
         model.J = copy(model.xy_obs) * 0.0001
         model.β = 1.0
 
-        model.ε = 0.0 # average energy
-        model.ε_hist = Float64[]
-        model.μ = 0.0 # average magnetization
-        model.cv = 0.0 # specific heat
+        model.energy_mean = 0.0 # average energy
+        model.energy_hist = Float64[]
+        model.magnetization_mean = 0.0 # average magnetization
+        model.specific_heat = 0.0 # specific heat
 
         #Random Laser specific params
         model.λwindow = [1055.3, 1057.2]
@@ -128,10 +128,10 @@ mutable struct MaxEnt
         model.J = similar(model.xy_obs)
         model.β = 1.0
 
-        model.ε = 0.0 # average energy
-        model.ε_hist = Float64[]
-        model.μ = 0.0 # average magnetization
-        model.cv = 0.0 # specific heat
+        model.energy_mean = 0.0 # average energy
+        model.energy_hist = Float64[]
+        model.magnetization_mean = 0.0 # average magnetization
+        model.specific_heat = 0.0 # specific heat
 
         #Random Laser specific params
         model.λwindow = [1055.3, 1057.2]
@@ -139,7 +139,7 @@ mutable struct MaxEnt
         model.init_file = ""
         model.comment = ""
         model.date_today = ""
-        model.n_relax_steps = 1000
+        model.n_relax_steps = 1
         model.tol = 1.0e-4
         model.iter_per_stage = 1
         model.α = 1.0

@@ -1,10 +1,10 @@
 function full_relax!(m::MaxEnt)
-    mess0 = @sprintf "full enumeration"
+    mess0 = @sprintf "full_relax! "
     mess = @sprintf "%s| writing error to %s" mess0 m.err_file
     debug(LOGGER, mess)
     open(m.err_file, "w") do file
         write(file, "it,time,err\n")
-
+        m.t = 1
         err = 1.0
         t0 = time()
         told = 0
@@ -27,10 +27,7 @@ function full_relax!(m::MaxEnt)
             told = t1
         end # ends relax loop
 
-
-        #full_measurements!(m; β=β)
-
+        full_iteration!(m, true)
     end # ends err file
     return nothing
-
 end
