@@ -89,7 +89,8 @@ function spin_permutations_iterator(n; spin_values=[+1, -1])
     return Base.Iterators.product(fill(spin_values, n)...)
 end
 
-function ones_distribution(M::Matrix{Int64})
+# TODO: generalize for real matrix
+function ones_distribution(M::Matrix{<:Number})
     nsamples, N = size(M)
 
     # Preallocate K array
@@ -97,7 +98,7 @@ function ones_distribution(M::Matrix{Int64})
 
     # Iterate over each row of M
     @inbounds for i in 1:nsamples
-        K[i] = count(isequal(1), M[i, :])
+        K[i] = count(x -> x > 0, M[i, :])
     end
 
     # Generate bin edges
@@ -154,7 +155,7 @@ function centered_moments_obs(m::MaxEnt)
     xy_matrix = zeros(m.nspins, m.nspins)
     triplets = zeros(size(m.xyz_obs))
 
-    stdev = sqrt(1.0 .- m.x_obs .^ 2)
+    stdev = sqrt.(1.0 .- m.x_obs .^ 2)
     t = 1
     for i in 1:m.nspins-1
         for j in i+1:m.nspins
@@ -174,6 +175,7 @@ function centered_moments_obs(m::MaxEnt)
                                xy_matrix[i, k] * m.x_obs[j] -
                                xy_matrix[j, k] * m.x_obs[i] +
                                2 * m.x_obs[i] * m.x_obs[j] * m.x_obs[k])
+                t += 1
             end
         end
     end
@@ -189,7 +191,7 @@ function centered_moments_mod(m::MaxEnt)
     xy_matrix = zeros(m.nspins, m.nspins)
     triplets = zeros(size(m.xyz_mod))
 
-    stdev = sqrt(1.0 .- m.x_mod .^ 2)
+    stdev = sqrt.(1.0 .- m.x_mod .^ 2)
     t = 1
     for i in 1:m.nspins-1
         for j in i+1:m.nspins
@@ -209,6 +211,7 @@ function centered_moments_mod(m::MaxEnt)
                                xy_matrix[i, k] * m.x_mod[j] -
                                xy_matrix[j, k] * m.x_mod[i] +
                                2 * m.x_mod[i] * m.x_mod[j] * m.x_mod[k])
+                t += 1
             end
         end
     end

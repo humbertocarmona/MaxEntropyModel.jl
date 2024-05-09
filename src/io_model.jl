@@ -27,19 +27,24 @@ function read_model(filename::String)
 
     nspins = obj.nspins
     model = MaxEnt()
-    debug(LOGGER, "so far so good")
     S_obs = Vector{Int64}(obj.S_obs)
     nsamples = length(S_obs) ÷ nspins
+
+    model.runid = obj.runid
+    model.nspins = obj.nspins
+    model.s = Vector{Float64}(obj.s)
     model.S_obs = reshape(S_obs, (nsamples, nspins))
 
     model.x_obs = Vector{Float64}(obj.x_obs)
     model.xy_obs = Vector{Float64}(obj.xy_obs)
     model.xyz_obs = Vector{Float64}(obj.xyz_obs)
+    model.pearson_obs = Vector{Float64}(obj.pearson_obs)
     model.ones_dist_obs = Vector{Float64}(obj.ones_dist_obs)
 
     model.x_mod = Vector{Float64}(obj.x_mod)
     model.xy_mod = Vector{Float64}(obj.xy_mod)
     model.xyz_mod = Vector{Float64}(obj.xyz_mod)
+    model.pearson_mod = Vector{Float64}(obj.pearson_mod)
     model.ones_dist_mod = Vector{Float64}(obj.ones_dist_mod)
 
     model.h = Vector{Float64}(obj.h)

@@ -5,7 +5,7 @@ mutable struct MaxEnt
 
     nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
     s::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
-    S_obs::Matrix{Int64}                # the experimental binary matrix
+    S_obs::Matrix{<:Number}                # the experimental binary matrix
 
     x_obs::Vector{Float64}              # observed E[ si ]
     xy_obs::Vector{Float64}             # observed E[ si⋅sj ]
@@ -50,7 +50,7 @@ mutable struct MaxEnt
     bond::Matrix{Int64}
     t::Int64
 
-    function MaxEnt(S::Matrix{Int64}, runid="test")
+    function MaxEnt(S::Matrix{<:Number}, runid="test")
         nspins = size(S, 2)
         model = new()
         model.model = "MaxEnt"
@@ -61,10 +61,14 @@ mutable struct MaxEnt
         model.S_obs = copy(S)
 
         model.x_obs = mean_1st_order_moments(S)
+        model.x_obs = map_to_unit_interval.(model.x_obs, -1.0, 1.0)
+
         model.xy_obs = mean_2nd_order_moments(S)
         model.pearson_obs = straighten(cor(S))
         model.xyz_obs = mean_3rd_order_moments(S)
         _, model.ones_dist_obs = ones_distribution(S)
+
+        model.x_obs[model.x_obs.==0] .+= 1e-9 # prevent inf relative error calculation
         model.xy_obs[model.xy_obs.==0] .+= 1e-9 # prevent inf relative error calculation
 
 
@@ -74,8 +78,8 @@ mutable struct MaxEnt
         model.xyz_mod = zeros(size(model.xyz_obs))
         model.ones_dist_mod = zeros(size(model.ones_dist_obs))
 
-        model.h = copy(model.x_obs)
-        model.J = copy(model.xy_obs) * 0.0001
+        model.h = model.x_obs .* 1.0
+        model.J = model.xy_obs .* 1.0e-9
         model.β = 1.0
 
         model.energy_mean = 0.0 # average energy

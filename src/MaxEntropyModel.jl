@@ -35,4 +35,13 @@ include("full_ensemble_iteration.jl")
 include("update_model.jl")
 include("full_ensemble_relax.jl")
 
+export MaxEnt,
+    read_model,
+    write_model,
+    full_relax!,
+    full_iteration!,
+    straighten,
+    centered_moments_obs,
+    centered_moments_mod
+
 end
