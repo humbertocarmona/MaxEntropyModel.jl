@@ -39,8 +39,10 @@ mutable struct MaxEnt
     date_today::String
     n_relax_steps::Int64
     iter_per_stage::Int64
-    α::Float64
-    γ::Float64
+    αh::Float64
+    αJ::Float64
+    γh::Float64
+    γJ::Float64
     tol::Float64
     n_samples::Int64
     n_equilibrium::Int64
@@ -61,7 +63,7 @@ mutable struct MaxEnt
         model.S_obs = copy(S)
 
         model.x_obs = mean_1st_order_moments(S)
-        model.x_obs = map_to_unit_interval.(model.x_obs, -1.0, 1.0)
+        # model.x_obs = map_to_unit_interval.(model.x_obs, -1.0, 1.0)
 
         model.xy_obs = mean_2nd_order_moments(S)
         model.pearson_obs = straighten(cor(S))
@@ -96,8 +98,10 @@ mutable struct MaxEnt
         model.tol = 1.0e-4
         model.date_today = ""
         model.iter_per_stage = 1
-        model.α = 1.0
-        model.γ = 0.4
+        model.αh = 1.0
+        model.αJ = 1.0
+        model.γh = 0.4
+        model.γJ = 0.4
         model.n_samples = 300_000
         model.n_equilibrium = 10_000
         model.n_coherence = 5
@@ -149,8 +153,10 @@ mutable struct MaxEnt
         model.n_relax_steps = 1
         model.tol = 1.0e-4
         model.iter_per_stage = 1
-        model.α = 1.0
-        model.γ = 0.4
+        model.αh = 1.0
+        model.αJ = 1.0
+        model.γh = 0.4
+        model.γJ = 0.4
         model.n_samples = 300_000
         model.n_equilibrium = 10_000
         model.n_coherence = 5

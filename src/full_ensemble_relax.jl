@@ -16,8 +16,7 @@ function full_relax!(m::MaxEnt)
 
             # compare experimental averages (π) and model averages (Q)
             err_x = mean(abs.((m.x_obs .- m.x_mod) ./ m.x_obs))
-            #err_xy = mean(abs.((m.xy_obs .- m.xy_mod) ./ m.xy_obs))
-            err_xy = mean(abs.((m.pearson_obs .- m.pearson_mod) ./ m.pearson_obs))
+            err_xy = mean(abs.((m.xy_obs .- m.xy_mod) ./ m.xy_obs))
 
             err = (err_x + 2 * err_xy) / 3
             write(file, "$(m.t),$(t1),$(err_x), $(err_xy)\n")
