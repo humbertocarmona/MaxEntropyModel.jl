@@ -4,7 +4,7 @@ using Memento
 using Printf
 using Graphs
 using Statistics
-using StatsBase: Histogram, fit
+using StatsBase: rmsd, Histogram, fit
 using LinearAlgebra
 using Random
 using Distributions
@@ -30,16 +30,19 @@ end
 include("MaxEnt.jl")
 include("utilities.jl")
 include("io_model.jl")
+include("initialize_parameters.jl")
 include("energy.jl")
 include("full_ensemble_iteration.jl")
+include("metropolis_iteration.jl")
 include("update_model.jl")
-include("full_ensemble_relax.jl")
-
+include("max_entropy_relax.jl")
 export MaxEnt,
+    init_parameters!,
     read_model,
     write_model,
-    full_relax!,
     full_iteration!,
+    metropolis_iteration!,
+    max_entropy_relax!,
     straighten,
     centered_moments_obs,
     centered_moments_mod
