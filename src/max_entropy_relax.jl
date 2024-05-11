@@ -1,5 +1,5 @@
-function full_relax!(m::MaxEnt)
-    mess0 = @sprintf "full_relax! "
+function max_entropy_relax!(m::MaxEnt)
+    mess0 = @sprintf "max_entropy_relax! %s " m.run_type
     mess = @sprintf "%s| writing error to %s" mess0 m.err_file
     debug(LOGGER, mess)
     open(m.err_file, "w") do file
@@ -8,10 +8,13 @@ function full_relax!(m::MaxEnt)
         err = 1.0
         t0 = time()
         told = 0
-
-        debug(LOGGER, "aqui")
+        m.t = 1
         while (m.t <= m.n_relax_steps) && (err > m.tol)
-            full_iteration!(m)
+            if m.run_type == 'f'
+                full_iteration!(m, false)
+            else
+                metropolis_iteration!(m, false)
+            end
             t1 = time() - t0
 
             # compare experimental averages (π) and model averages (Q)
@@ -29,7 +32,11 @@ function full_relax!(m::MaxEnt)
             told = t1
         end # ends relax loop
 
-        full_iteration!(m, true)
+        if m.run_type == 'f'
+            full_iteration!(m, true)
+        else
+            metropolis_iteration!(m, true)
+        end
     end # ends err file
     return nothing
 end

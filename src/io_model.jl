@@ -59,7 +59,9 @@ function read_model(filename::String)
 
     # Random Laser specific params
     haskey(obj, "λwindow") && (model.λwindow = Vector{Float64}(obj.λwindow))
-    haskey(obj, "run_type") && (model.run_type = obj.run_type)
+    if haskey(obj, "run_type")
+        obj.run_type = obj.run_type[1]
+    end
     haskey(obj, "init_file") && (model.init_file = obj.init_file)
     haskey(obj, "result_file") && (model.result_file = obj.result_file)
     haskey(obj, "err_file") && (model.err_file = obj.err_file)
@@ -79,6 +81,9 @@ function read_model(filename::String)
     haskey(obj, "n_coherence") && (model.n_coherence = obj.n_coherence)
     haskey(obj, "bond") && (model.bond = make_bonds(nspins))
     haskey(obj, "t") && (model.t = obj.t)
+    haskey(obj, "mc_seed") && (model.mc_seed = obj.mc_seed)
+    haskey(obj, "n_rept") && (model.n_rept = obj.n_rept)
 
+    model.Es = energy(model)
     return model
 end

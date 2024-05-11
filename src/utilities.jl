@@ -89,7 +89,7 @@ function spin_permutations_iterator(n; spin_values=[+1, -1])
     return Base.Iterators.product(fill(spin_values, n)...)
 end
 
-# TODO: generalize for real matrix
+
 function ones_distribution(M::Matrix{<:Number})
     nsamples, N = size(M)
 
