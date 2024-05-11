@@ -103,7 +103,6 @@ mutable struct MaxEnt
         model.γh = 0.4
         model.γJ = 0.4
 
-        model.n_relax_steps = 100
         model.n_samples = 20000 * nspins
         model.n_rept = 2 * nspins
         model.n_coherence = 50 * nspins
@@ -161,12 +160,12 @@ mutable struct MaxEnt
         model.date_today = ""
         model.tol = 1.0e-4
         model.αh = 1.0
-        model.αJ = 0.5
-        model.γh = 0.1
-        model.γJ = 0.1
-        model.n_relax_steps = 3600
+        model.αJ = 1.0
+        model.γh = 0.4
+        model.γJ = 0.4
+        model.n_relax_steps = 20
         model.iter_per_stage = 1
-        model.n_samples = 5000 * nspins
+        model.n_samples = 10000 * nspins
         model.n_rept = 2 * nspins
         model.n_coherence = 10 * nspins
         model.n_equilibrium = 10 * nspins
