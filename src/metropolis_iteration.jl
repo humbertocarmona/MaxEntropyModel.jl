@@ -29,6 +29,7 @@ function metropolis_iteration!(m::MaxEnt, meas)
 
     s = 1
     for _ in 1:m.n_rept
+        m.s .= -1
         for n in 1:n_flips
             t = n - m.n_equilibrium
 

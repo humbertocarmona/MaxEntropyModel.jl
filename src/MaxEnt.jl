@@ -113,8 +113,9 @@ mutable struct MaxEnt
         model.tol = 1.0e-6
 
         model.n_samples = 4000 * nspins
-        model.n_rept = 2 * nspins
-        model.n_coherence = 20 * nspins
+        model.n_rept = 40 * nspins
+        model.n_coherence = 10 * nspins
+        debug(LOGGER, "n_coherene=$(model.n_coherence)")
         model.n_equilibrium = 100 * nspins
         model.mc_seed = 1234
 

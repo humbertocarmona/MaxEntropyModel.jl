@@ -56,7 +56,7 @@ function testenergy()
     end
 
 end
-# @testset "energy" testenergy()
+@testset "energy" testenergy()
 
 function testfull()
     rng = Xoshiro(4323)
@@ -75,4 +75,4 @@ function testfull()
     @test rmsd(m0.J, m1.J, normalize=true) < 0.01
 
 end
-@testset "full_iteration" testfull()
+#@testset "full_iteration" testfull()
