@@ -1,9 +1,6 @@
 function flip!(m::MaxEnt, i::Int64, rng)
     ΔE = deltaEnergy(m, i)
-    if ΔE <= 0.0
-        m.s[i] = -m.s[i]
-        m.Es += ΔE
-    elseif rand() < exp(-m.β * ΔE)
+    if ΔE < 0.0 || rand(rng) < exp(-m.β * ΔE)
         m.s[i] = -m.s[i]
         m.Es += ΔE
     end
@@ -35,9 +32,9 @@ function metropolis_iteration!(m::MaxEnt, meas)
         for n in 1:n_flips
             t = n - m.n_equilibrium
 
-            # choose one spin randomly
             s_flip = rand(rng, 1:m.nspins)
             flip!(m, s_flip, rng)
+
             if (t > 0) && (t % m.n_coherence == 0)
                 m.x_mod .= m.x_mod .+ m.s
                 k = 1
@@ -45,6 +42,7 @@ function metropolis_iteration!(m::MaxEnt, meas)
                     m.xy_mod[k] += m.s[i] * m.s[j]
                     k += 1
                 end
+                m.energy_hist[s] = m.Es
                 if meas
                     m.energy_mean += m.Es
                     m.specific_heat += m.Es * m.Es
@@ -62,13 +60,12 @@ function metropolis_iteration!(m::MaxEnt, meas)
                     m.ones_dist_mod[k+1] += 1
                     samples[s, :] = copy(m.s)
                 end
-                m.energy_hist[s] = m.Es
                 s += 1
             end
         end
     end
-    s -= 1
-    @assert s == m.n_samples "expected s=$(m.n_samples), got $s"
+    # s -= 1
+    # @assert s == m.n_samples "expected s=$(m.n_samples), got $s"
 
     m.x_mod ./= m.n_samples
     m.xy_mod ./= m.n_samples

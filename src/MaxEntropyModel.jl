@@ -45,6 +45,8 @@ export MaxEnt,
     max_entropy_relax!,
     straighten,
     centered_moments_obs,
-    centered_moments_mod
+    centered_moments_mod,
+    energy,
+    deltaEnergy
 
 end

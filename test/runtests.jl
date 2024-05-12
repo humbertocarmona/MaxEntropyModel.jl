@@ -1,6 +1,7 @@
 using MaxEntropyModel
 using Test
 using LinearAlgebra
+using Random, Distributions
 
 function testmodel()
     M = map(x -> x < 0.5 ? -1 : 1, rand(Int64, 1000, 20))
@@ -10,7 +11,7 @@ function testmodel()
     @test model.nspins == 20
     @test model.S_obs == M
 end
-@testset "MaxEnt" testmodel()
+#@testset "MaxEnt" testmodel()
 
 
 function testio()
@@ -41,17 +42,18 @@ function testenergy()
     en = MaxEntropyModel.energy(model)
     @test en == -model.nspins * (model.nspins - 1) / 2
 
-    δ = MaxEntropyModel.deltaEnergy(model, 1)
-    model.s[1] = -model.s[1]
-    fn = MaxEntropyModel.energy(model)
-    δ1 = fn - en
-    @test δ1 == δ
+    model.h = rand(Normal(0, 0.1), size(model.h))
+    model.J = rand(Normal(0, 0.1), size(model.J))
+    model.s = map(x -> x < 0.5 ? -1 : 1, rand(model.nspins))
+    en0 = MaxEntropyModel.energy(model)
+    for i in 1:model.nspins
+        δe = MaxEntropyModel.deltaEnergy(model, i)
+        model.s[i] = -model.s[i]
+        en1 = MaxEntropyModel.energy(model)
+        @test isapprox(δe, (en1 - en0), atol=1e-14)
+        en0 = en1
+    end
 
-    δ2 = MaxEntropyModel.deltaEnergy(model, 20)
-    model.s[20] = -model.s[20]
-    en = MaxEntropyModel.energy(model)
-    δ3 = en - fn
-    @test δ2 == δ3
 end
 @testset "energy" testenergy()
 

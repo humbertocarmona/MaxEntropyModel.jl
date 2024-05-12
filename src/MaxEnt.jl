@@ -40,10 +40,14 @@ mutable struct MaxEnt
     date_today::String
     n_relax_steps::Int64
     iter_per_stage::Int64
-    αh::Float64
-    αJ::Float64
+    ηh::Float64
+    ηJ::Float64
     γh::Float64
     γJ::Float64
+    α::Float64              # update inertia
+    Δx::Vector{Float64}     # ..
+    Δxy::Vector{Float64}    # ..
+
     tol::Float64
     n_samples::Int64
     n_equilibrium::Int64
@@ -82,6 +86,8 @@ mutable struct MaxEnt
         model.xyz_mod = zeros(size(model.xyz_obs))
         model.ones_dist_mod = zeros(size(model.ones_dist_obs))
 
+        model.Δx = zeros(size(model.x_obs))
+        model.Δxy = zeros(size(model.xy_obs))
         init_parameters!(model)
         model.β = 1.0
 
@@ -98,11 +104,11 @@ mutable struct MaxEnt
         model.tol = 1.0e-4
         model.date_today = ""
         model.iter_per_stage = 1
-        model.αh = 1.0
-        model.αJ = 1.0
+        model.ηh = 1.0
+        model.ηJ = 1.0
         model.γh = 0.4
         model.γJ = 0.4
-
+        model.α = 0.1
         model.n_samples = 20000 * nspins
         model.n_rept = 2 * nspins
         model.n_coherence = 50 * nspins
@@ -158,17 +164,21 @@ mutable struct MaxEnt
         model.init_file = ""
         model.comment = ""
         model.date_today = ""
-        model.tol = 1.0e-4
-        model.αh = 1.0
-        model.αJ = 1.0
-        model.γh = 0.4
-        model.γJ = 0.4
-        model.n_relax_steps = 20
+        model.tol = 1.0e-6
+        model.ηh = 1.0
+        model.ηJ = 1.1
+        model.γh = 0.2
+        model.γJ = 0.2
+        model.α = 0.1
+        model.Δx = zeros(size(model.x_obs))
+        model.Δxy = zeros(size(model.xy_obs))
+
+        model.n_relax_steps = 50
         model.iter_per_stage = 1
-        model.n_samples = 10000 * nspins
+        model.n_samples = 4000 * nspins
         model.n_rept = 2 * nspins
-        model.n_coherence = 10 * nspins
-        model.n_equilibrium = 10 * nspins
+        model.n_coherence = 20 * nspins
+        model.n_equilibrium = 100 * nspins
         model.result_file = "safe.json"
         model.err_file = "err.csv"
         model.bond = make_bonds(nspins)
