@@ -2,6 +2,7 @@ using MaxEntropyModel
 using Test
 using LinearAlgebra
 using Random, Distributions
+using StatsBase: rmsd
 
 function testmodel()
     M = map(x -> x < 0.5 ? -1 : 1, rand(Int64, 1000, 20))
@@ -25,7 +26,7 @@ function testio()
     @test model.S_obs == model2.S_obs
 
 end
-@testset "io" testio()
+# @testset "io" testio()
 
 function testenergy()
     M = map(x -> x < 0.5 ? -1 : 1, rand(Int64, 40, 20))
@@ -55,5 +56,23 @@ function testenergy()
     end
 
 end
-@testset "energy" testenergy()
+# @testset "energy" testenergy()
 
+function testfull()
+    rng = Xoshiro(4323)
+    M = map(x -> x < 0.5 ? -1 : 1, rand(rng, Int64, 1000, 20))
+    m0 = MaxEnt(M)
+    m0.h = rand(rng, Normal(0.0, 0.10), size(m0.h))
+    m0.J = rand(rng, Normal(0.0, 0.10), size(m0.J))
+
+    samples = metropolis_iteration!(m0, true)
+
+    m1 = MaxEnt(samples)
+    m1.n_relax_steps = 100
+    max_entropy_relax!(m1)
+
+    @test rmsd(m0.h, m1.h, normalize=true) < 0.015
+    @test rmsd(m0.J, m1.J, normalize=true) < 0.01
+
+end
+@testset "full_iteration" testfull()

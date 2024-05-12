@@ -39,7 +39,6 @@ mutable struct MaxEnt
     comment::String
     date_today::String
     n_relax_steps::Int64
-    iter_per_stage::Int64
     ηh::Float64
     ηJ::Float64
     γh::Float64
@@ -101,70 +100,8 @@ mutable struct MaxEnt
         model.run_type = run_type
         model.init_file = ""
         model.comment = ""
-        model.tol = 1.0e-4
         model.date_today = ""
-        model.iter_per_stage = 1
-        model.ηh = 1.0
-        model.ηJ = 1.0
-        model.γh = 0.4
-        model.γJ = 0.4
-        model.α = 0.1
-        model.n_samples = 20000 * nspins
-        model.n_rept = 2 * nspins
-        model.n_coherence = 50 * nspins
-        model.n_equilibrium = 100 * nspins
 
-        model.result_file = "safe.json"
-        model.err_file = "err.csv"
-        model.mc_seed = 1234
-        model.Es = energy(model)
-        model.bond = make_bonds(nspins)
-        model.t = 1
-        return model
-    end
-
-    function MaxEnt(runid="teste", nsamples=1000, nspins=20, run_type='f')
-        S = map(x -> x < 0.5 ? -1 : 1, rand(nsamples, nspins))
-        nbonds = nspins * (nspins - 1) ÷ 2
-        model = new()
-        model.model = "MaxEnt"
-
-        model.runid = runid
-        model.nspins = nspins
-        model.s = map(x -> x < 0.5 ? 1 : -1, rand(nspins))   # random initial state
-        model.S_obs = copy(S)
-
-        model.x_obs = mean_1st_order_moments(S)
-        # model.x_obs = map_to_unit_interval.(model.x_obs, -1.0, 1.0)
-
-        model.xy_obs = mean_2nd_order_moments(S)
-        model.pearson_obs = straighten(cor(S))
-        model.xyz_obs = mean_3rd_order_moments(S)
-        _, model.ones_dist_obs = ones_distribution(S)
-
-        model.x_obs[model.x_obs.==0] .+= 1e-9 # prevent inf relative error calculation
-        model.xy_obs[model.xy_obs.==0] .+= 1e-9 # prevent inf relative error calculation
-
-        model.x_mod = zeros(nspins)
-        model.xy_mod = zeros(nbonds)
-        model.xyz_mod = zeros(size(model.xyz_obs))
-        model.ones_dist_mod = zeros(size(model.ones_dist_obs))
-
-        init_parameters!(model)
-        model.β = 1.0
-
-        model.energy_mean = 0.0 # average energy
-        model.energy_hist = Float64[]
-        model.magnetization_mean = 0.0 # average magnetization
-        model.specific_heat = 0.0 # specific heat
-
-        #Random Laser specific params
-        model.λwindow = [1055.3, 1057.2]
-        model.run_type = run_type
-        model.init_file = ""
-        model.comment = ""
-        model.date_today = ""
-        model.tol = 1.0e-6
         model.ηh = 1.0
         model.ηJ = 1.1
         model.γh = 0.2
@@ -172,20 +109,27 @@ mutable struct MaxEnt
         model.α = 0.1
         model.Δx = zeros(size(model.x_obs))
         model.Δxy = zeros(size(model.xy_obs))
-
         model.n_relax_steps = 50
-        model.iter_per_stage = 1
+        model.tol = 1.0e-6
+
         model.n_samples = 4000 * nspins
         model.n_rept = 2 * nspins
         model.n_coherence = 20 * nspins
         model.n_equilibrium = 100 * nspins
+        model.mc_seed = 1234
+
         model.result_file = "safe.json"
         model.err_file = "err.csv"
+
         model.bond = make_bonds(nspins)
-        model.mc_seed = 1234
         model.Es = energy(model)
         model.t = 1
 
         return model
+    end
+
+    function MaxEnt(runid="teste", nsamples=1000, nspins=20, run_type='f')
+        S = map(x -> x < 0.5 ? -1 : 1, rand(nsamples, nspins))
+        return MaxEnt(S, runid, run_type)
     end
 end
