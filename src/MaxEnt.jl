@@ -31,13 +31,13 @@ mutable struct MaxEnt
     specific_heat::Float64
 
     # Random Laser specific parameters
-    λwindow::Vector{<:Number}
     run_type::Char
     init_file::String
     result_file::String
     err_file::String
     comment::String
     date_today::String
+    λwindow::Vector{<:Number}
     n_relax_steps::Int64
     ηh::Float64
     ηJ::Float64
