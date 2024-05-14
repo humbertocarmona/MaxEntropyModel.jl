@@ -9,9 +9,9 @@ function max_entropy_relax!(m::MaxEnt)
 
         err = 1.0
         t0 = time()
-        told = 0
         m.t = 1
         while (m.t <= m.n_relax_steps) && (err > m.tol)
+            t0 = time()
             if m.run_type == 'f'
                 full_iteration!(m, false)
             else
@@ -20,18 +20,17 @@ function max_entropy_relax!(m::MaxEnt)
             t1 = time() - t0
 
             # compare experimental averages (π) and model averages (Q)
-            err_x = rmsd(m.x_obs, m.x_mod, normalize=true)
-            err_xy = rmsd(m.xy_obs, m.xy_mod, normalize=true)
+            err_x = rmsd(m.x_obs, m.x_mod)
+            err_xy = rmsd(m.xy_obs, m.xy_mod)
 
             err = (err_x + 2 * err_xy) / 3
-            write(file, "$(m.t),$(t1),$(err_x), $(err_xy)\n")
-            mess1 = @sprintf "%18s|t:%5d|t(s):%6.2f" mess0 m.t t1 - told
+            write(file, "$(m.t),$(t1),$(err_x),$(err_xy)\n")
+            mess1 = @sprintf "%18s|t:%5d|t(s):%6.2f" mess0 m.t t1
             mess2 = @sprintf "%s|err_x:%8.5f|err_xy:%8.5f|err:%8.5f" mess1 err_x err_xy err
             info(LOGGER, mess2)
 
             updated_parameters!(m)
             m.t += 1
-            told = t1
         end # ends relax loop
 
         if m.run_type == 'f'
