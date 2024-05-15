@@ -36,17 +36,20 @@ include("full_ensemble_iteration.jl")
 include("metropolis_iteration.jl")
 include("update_model.jl")
 include("max_entropy_relax.jl")
+include("full_tsallis.jl")
+
 export MaxEnt,
     init_parameters!,
     read_model,
     write_model,
     full_iteration!,
+    full_tsallis!,
+    full_tsallis_measurements!,
     metropolis_iteration!,
     max_entropy_relax!,
     straighten,
     centered_moments_obs,
     centered_moments_mod,
     energy,
-    deltaEnergy
-
+    deltaEnergy, exp_q, ln_q
 end

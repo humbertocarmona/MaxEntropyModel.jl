@@ -235,3 +235,23 @@ function pearson_mod!(m::MaxEnt)
 
     return nothing
 end
+
+
+@inline function exp_q(x::Float64, q::Float64)
+    (q == 1.0) && (return exp(x))
+    Q = 1.0 - q
+    y = (1 + Q * x)
+    (y < 0.0) && (return 0.0)
+    return y^(1.0 / Q)
+end
+
+@inline function ln_q(x::Float64, q::Float64)
+    (q == 1.0) && (return log(x))
+    return (x^(1 - q) - 1) / (1 - q)
+end
+
+@inline function compute_energy_shift(m::MaxEnt, q)
+    σi = sign.(m.h * (1.0 - q))
+    σij = sign.(m.J * (1.0 - q))
+    return -dot(m.h, σi) - dot(m.J, σij)
+end

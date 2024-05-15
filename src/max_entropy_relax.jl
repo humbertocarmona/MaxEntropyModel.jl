@@ -13,9 +13,9 @@ function max_entropy_relax!(m::MaxEnt)
         while (m.t <= m.n_relax_steps) && (err > m.tol)
             t0 = time()
             if m.run_type == 'f'
-                full_iteration!(m, false)
+                full_iteration!(m)
             else
-                metropolis_iteration!(m, false)
+                metropolis_iteration!(m)
             end
             t1 = time() - t0
 
@@ -34,9 +34,9 @@ function max_entropy_relax!(m::MaxEnt)
         end # ends relax loop
 
         if m.run_type == 'f'
-            full_iteration!(m, true)
+            full_measurements!(m)
         else
-            samples = metropolis_iteration!(m, true)
+            samples = metropolis_measuremments!(m)
         end
     end # ends err file
 

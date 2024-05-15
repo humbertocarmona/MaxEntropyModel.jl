@@ -1,10 +1,13 @@
 function energy(m::MaxEnt)
+
     H = -dot(m.h, m.s)
 
     t = 1
-    for i in 1:m.nspins-1, j in i+1:m.nspins
-        @inbounds H -= m.s[i] * m.J[t] * m.s[j]
-        t += 1
+    for i in 1:m.nspins-1
+        for j in i+1:m.nspins
+            @inbounds H -= m.s[i] * m.J[t] * m.s[j]
+            t += 1
+        end
     end
 
     return H

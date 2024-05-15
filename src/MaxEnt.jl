@@ -27,6 +27,7 @@ mutable struct MaxEnt
 
     energy_mean::Float64
     energy_hist::Vector{Float64}
+    H0_hist::Vector{Float64}
     magnetization_mean::Float64
     specific_heat::Float64
 
@@ -111,6 +112,8 @@ mutable struct MaxEnt
         model.Δxy = zeros(size(model.xy_obs))
         model.n_relax_steps = 50
         model.tol = 1.0e-6
+
+        model.H0_hist = Array{Float64}(undef, model.n_relax_steps)
 
         model.n_samples = 4000 * nspins
         model.n_rept = 1 * nspins
