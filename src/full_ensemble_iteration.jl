@@ -36,8 +36,8 @@ function full_measurements!(m::MaxEnt)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
     m.H_vals = Array{Float64}(undef, 2^m.nspins)
 
-    m.energy_mean = 0.0
-    m.specific_heat = 0.0
+    m.H_mean = 0.0
+    H2_mean = 0.0
     m.magnetization_mean = 0.0
     m.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
     m.ones_dist_mod .= zeros(nspins + 1)
@@ -56,8 +56,8 @@ function full_measurements!(m::MaxEnt)
             t += 1
         end
 
-        m.energy_mean += m.H * Zx
-        m.specific_heat += m.H * m.H * Zx
+        m.H_mean += m.H * Zx
+        H2_mean += m.H * m.H * Zx
         m.magnetization_mean += sum(m.s) * Zx
         t = 1
         for i in 1:nspins-2
@@ -76,9 +76,9 @@ function full_measurements!(m::MaxEnt)
     end
     m.x_mod ./= Z
     m.xy_mod ./= Z
-    m.energy_mean /= Z
-    m.specific_heat /= Z
-    m.specific_heat = m.β^2 * (m.specific_heat - m.energy_mean^2)
+    m.H_mean /= Z
+    H2_mean /= Z
+    m.specific_heat = m.β^2 * (H2_mean - m.H_mean^2)
     m.magnetization_mean /= Z
     m.xyz_mod ./= Z
     m.ones_dist_mod ./= sum(m.ones_dist_mod)

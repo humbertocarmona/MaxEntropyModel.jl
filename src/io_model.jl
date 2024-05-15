@@ -52,7 +52,7 @@ function read_model(filename::String)
 
     haskey(obj, "β") && (model.β = obj.β)
 
-    haskey(obj, "energy_mean") && (model.energy_mean = obj.energy_mean)
+    haskey(obj, "H_mean") && (model.H_mean = obj.H_mean)
     haskey(obj, "H_vals") && (model.H_vals = Vector{Float64}(obj.H_vals))
     haskey(obj, "magnetization_mean") && (model.magnetization_mean = obj.magnetization_mean)
     haskey(obj, "specific_heat") && (model.specific_heat = obj.specific_heat)

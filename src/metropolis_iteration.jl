@@ -56,8 +56,8 @@ function metropolis_measurements!(m::MaxEnt)
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
     m.H_vals = Array{Float64}(undef, m.n_samples)
-    m.energy_mean = 0.0
-    m.specific_heat = 0.0
+    m.H_mean = 0.0
+    H2_mean = 0.0
     m.magnetization_mean = 0.0
     m.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
     m.ones_dist_mod .= zeros(nspins + 1)
@@ -82,8 +82,8 @@ function metropolis_measurements!(m::MaxEnt)
                     k += 1
                 end
                 m.H_vals[s] = m.H
-                m.energy_mean += m.H
-                m.specific_heat += m.H * m.H
+                m.H_mean += m.H
+                H2_mean += m.H * m.H
                 m.magnetization_mean += sum(m.s)
                 t = 1
                 for i in 1:nspins-2
@@ -107,9 +107,9 @@ function metropolis_measurements!(m::MaxEnt)
     m.x_mod ./= m.n_samples
     m.xy_mod ./= m.n_samples
     pearson_mod!(m)
-    m.energy_mean /= m.n_samples
-    m.specific_heat /= m.n_samples
-    m.specific_heat = m.β^2 * (m.specific_heat - m.energy_mean^2)
+    m.H_mean /= m.n_samples
+    H2_mean /= m.n_samples
+    m.specific_heat = m.β^2 * (H2_mean - m.H_mean^2)
     m.magnetization_mean /= m.n_samples
     m.xyz_mod ./= m.n_samples
     m.ones_dist_mod ./= sum(m.ones_dist_mod)
@@ -124,8 +124,8 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
     m.H_vals = Array{Float64}(undef, m.n_samples)
-    m.energy_mean = 0.0
-    m.specific_heat = 0.0
+    m.H_mean = 0.0
+    H2_mean = 0.0
     m.magnetization_mean = 0.0
     m.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
     m.ones_dist_mod .= zeros(nspins + 1)
@@ -138,8 +138,8 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
             m.xy_mod[k] += m.s[i] * m.s[j]
             k += 1
         end
-        m.energy_mean += m.H
-        m.specific_heat += m.H * m.H
+        m.H_mean += m.H
+        H2_mean += m.H * m.H
         m.magnetization_mean += sum(m.s)
         t = 1
         for i in 1:nspins-2
@@ -157,9 +157,9 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
 
     m.x_mod ./= m.n_samples
     m.xy_mod ./= m.n_samples
-    m.energy_mean /= m.n_samples
-    m.specific_heat /= m.n_samples
-    m.specific_heat = m.β^2 * (m.specific_heat - m.energy_mean^2)
+    m.H_mean /= m.n_samples
+    H2_mean /= m.n_samples
+    m.specific_heat = m.β^2 * (H2_mean - m.H_mean^2)
     m.magnetization_mean /= m.n_samples
     m.xyz_mod ./= m.n_samples
     m.ones_dist_mod ./= sum(m.ones_dist_mod)

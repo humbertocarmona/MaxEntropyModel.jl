@@ -4184,7 +4184,7 @@
         -0.1
     ],
     "β": 1,
-    "energy_mean": 0,
+    "H_mean": 0,
     "energy_hist": [
     ],
     "magnetization_mean": 0,

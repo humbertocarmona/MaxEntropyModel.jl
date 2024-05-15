@@ -9,7 +9,7 @@ function full_tsallis!(m::MaxEnt, q::Float64)
 
     H0 = compute_energy_shift(m, q)
     m.H_vals = Array{Float64}(undef, 2^m.nspins)
-    m.H0_hist[m.t] = H0
+    m.H0_vals[m.t] = H0
     s = 1
     for p in spin_permutations_iterator(nspins)
         m.s .= collect(p)
@@ -41,14 +41,14 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
     m.H_vals = Array{Float64}(undef, 2^m.nspins)
 
-    m.energy_mean = 0.0
-    m.specific_heat = 0.0
+    m.H_mean = 0.0
+    H2_mean = 0.0
     m.magnetization_mean = 0.0
     m.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
     m.ones_dist_mod .= zeros(nspins + 1)
 
     H0 = compute_energy_shift(m, q)
-    m.H0_hist[m.t] = H0
+    m.H0_vals[m.t] = H0
 
     s = 1
     for p in spin_permutations_iterator(nspins)
@@ -64,8 +64,8 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
             t += 1
         end
 
-        m.energy_mean += m.H * Zx
-        m.specific_heat += m.H * m.H * Zx
+        m.H_mean += m.H * Zx
+        H2_mean += m.H * m.H * Zx
         m.magnetization_mean += sum(m.s) * Zx
         t = 1
         for i in 1:nspins-2
@@ -84,9 +84,9 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
     end
     m.x_mod ./= Zq
     m.xy_mod ./= Zq
-    m.energy_mean /= Zq
-    m.specific_heat /= Zq
-    m.specific_heat = m.β^2 * (m.specific_heat - m.energy_mean^2)
+    m.H_mean /= Zq
+    H2_mean /= Zq
+    m.specific_heat = m.β^2 * (H2_mean - m.H_mean^2)
     m.magnetization_mean /= Zq
     m.xyz_mod ./= Zq
     m.ones_dist_mod ./= sum(m.ones_dist_mod)

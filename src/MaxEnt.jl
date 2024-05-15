@@ -5,8 +5,8 @@ mutable struct MaxEnt
 
     nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
     s::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
-    H::Float64                         # system energy corresponding to state s
-    S_obs::Matrix{<:Number}                # the experimental binary matrix
+    H::Float64                          # system energy corresponding to state s
+    S_obs::Matrix{<:Number}             # the experimental binary matrix
 
     x_obs::Vector{Float64}              # observed E[ si ]
     xy_obs::Vector{Float64}             # observed E[ si⋅sj ]
@@ -25,13 +25,12 @@ mutable struct MaxEnt
 
     β::Float64                          # inverse temperature used to train the model
 
-    energy_mean::Float64
-
-    H_vals::Vector{Float64}
-    H0_hist::Vector{Float64}
-
-    magnetization_mean::Float64
-    specific_heat::Float64
+    H_mean::Float64                     # mean system energy
+    H_vals::Vector{Float64}             # store energy values for each state
+    H0_vals::Vector{Float64}            # store H0 values (Andre's correction) for each parameter set
+    P_vals::Vector{Float64}             # store P values for each state (normalized) (maybe should be P(E))
+    magnetization_mean::Float64         # system magnetization mean
+    specific_heat::Float64              # system specific heat  β^-2 <H^2> - <H>^2
 
     # Random Laser specific parameters
     run_type::Char
@@ -93,7 +92,7 @@ mutable struct MaxEnt
         init_parameters!(model)
         model.β = 1.0
 
-        model.energy_mean = 0.0 # average energy
+        model.H_mean = 0.0 # average energy
         model.H_vals = Float64[]
         model.magnetization_mean = 0.0 # average magnetization
         model.specific_heat = 0.0 # specific heat
@@ -115,7 +114,7 @@ mutable struct MaxEnt
         model.n_relax_steps = 50
         model.tol = 1.0e-6
 
-        model.H0_hist = Array{Float64}(undef, model.n_relax_steps)
+        model.H0_vals = Array{Float64}(undef, model.n_relax_steps)
 
         model.n_samples = 4000 * nspins
         model.n_rept = 1 * nspins
