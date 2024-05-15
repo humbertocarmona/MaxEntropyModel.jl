@@ -26,8 +26,10 @@ mutable struct MaxEnt
     β::Float64                          # inverse temperature used to train the model
 
     energy_mean::Float64
-    energy_hist::Vector{Float64}
+
+    H_vals::Vector{Float64}
     H0_hist::Vector{Float64}
+
     magnetization_mean::Float64
     specific_heat::Float64
 
@@ -92,7 +94,7 @@ mutable struct MaxEnt
         model.β = 1.0
 
         model.energy_mean = 0.0 # average energy
-        model.energy_hist = Float64[]
+        model.H_vals = Float64[]
         model.magnetization_mean = 0.0 # average magnetization
         model.specific_heat = 0.0 # specific heat
 

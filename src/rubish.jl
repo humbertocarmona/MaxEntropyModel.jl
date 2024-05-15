@@ -7,7 +7,7 @@
         m.Es = energy(m)
         m.x_mod .= zeros(nspins)
         m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-        m.energy_hist = Array{Float64}(undef, m.n_samples)
+        m.H_vals = Array{Float64}(undef, m.n_samples)
 
         samples = zeros(Int64, (m.n_samples, nspins))
         rept_steps = m.n_samples * m.n_coherence ÷ m.n_rept + m.n_equilibrium
@@ -25,7 +25,7 @@
                         m.xy_mod[k] += m.s[i] * m.s[j]
                         k += 1
                     end
-                    m.energy_hist[s] = m.Es
+                    m.H_vals[s] = m.Es
                     samples[s, :] = copy(m.s)
                     s += 1
                 end

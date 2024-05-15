@@ -55,7 +55,7 @@ function metropolis_measurements!(m::MaxEnt)
 
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-    m.energy_hist = Array{Float64}(undef, m.n_samples)
+    m.H_vals = Array{Float64}(undef, m.n_samples)
     m.energy_mean = 0.0
     m.specific_heat = 0.0
     m.magnetization_mean = 0.0
@@ -81,7 +81,7 @@ function metropolis_measurements!(m::MaxEnt)
                     m.xy_mod[k] += m.s[i] * m.s[j]
                     k += 1
                 end
-                m.energy_hist[s] = m.Es
+                m.H_vals[s] = m.Es
                 m.energy_mean += m.Es
                 m.specific_heat += m.Es * m.Es
                 m.magnetization_mean += sum(m.s)
@@ -123,7 +123,7 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
 
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-    m.energy_hist = Array{Float64}(undef, m.n_samples)
+    m.H_vals = Array{Float64}(undef, m.n_samples)
     m.energy_mean = 0.0
     m.specific_heat = 0.0
     m.magnetization_mean = 0.0
@@ -152,7 +152,7 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
         end
         k = count(isone.(m.s))
         m.ones_dist_mod[k+1] += 1
-        m.energy_hist[s] = m.Es
+        m.H_vals[s] = m.Es
     end
 
     m.x_mod ./= m.n_samples

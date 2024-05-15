@@ -8,7 +8,7 @@ function full_tsallis!(m::MaxEnt, q::Float64)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
 
     H0 = compute_energy_shift(m, q)
-    m.energy_hist = Array{Float64}(undef, 2^m.nspins)
+    m.H_vals = Array{Float64}(undef, 2^m.nspins)
     m.H0_hist[m.t] = H0
     s = 1
     for p in spin_permutations_iterator(nspins)
@@ -16,7 +16,7 @@ function full_tsallis!(m::MaxEnt, q::Float64)
         m.Es = energy(m)
         Zx = exp_q(-m.β * (m.Es + H0), q)
         Zq += Zx
-        m.energy_hist[s] = (1 + (1 - q) * (m.Es + H0))
+        m.H_vals[s] = (1 + (1 - q) * (m.Es + H0))
         m.x_mod .= m.x_mod .+ Zx .* m.s
         t = 1
         for i in 1:nspins-1
@@ -39,7 +39,7 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
     Zq = 0.0
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-    m.energy_hist = Array{Float64}(undef, 2^m.nspins)
+    m.H_vals = Array{Float64}(undef, 2^m.nspins)
 
     m.energy_mean = 0.0
     m.specific_heat = 0.0
@@ -79,7 +79,7 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
         k = count(isone.(m.s))
         m.ones_dist_mod[k+1] += Zx
 
-        m.energy_hist[s] = m.Es
+        m.H_vals[s] = m.Es
         s += 1
     end
     m.x_mod ./= Zq

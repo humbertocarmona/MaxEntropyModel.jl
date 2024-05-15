@@ -34,7 +34,7 @@ function full_measurements!(m::MaxEnt)
     Z = 0.0
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-    m.energy_hist = Array{Float64}(undef, 2^m.nspins)
+    m.H_vals = Array{Float64}(undef, 2^m.nspins)
 
     m.energy_mean = 0.0
     m.specific_heat = 0.0
@@ -71,7 +71,7 @@ function full_measurements!(m::MaxEnt)
         k = count(isone.(m.s))
         m.ones_dist_mod[k+1] += Zx
 
-        m.energy_hist[s] = m.Es
+        m.H_vals[s] = m.Es
         s += 1
     end
     m.x_mod ./= Z
