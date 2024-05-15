@@ -28,7 +28,12 @@ mutable struct MaxEnt
     H_mean::Float64                     # mean system energy
     H_vals::Vector{Float64}             # store energy values for each state
     H0_vals::Vector{Float64}            # store H0 values (Andre's correction) for each parameter set
-    P_vals::Vector{Float64}             # store P values for each state (normalized) (maybe should be P(E))
+
+    PE_weights::Vector{Float64}                 # store density of states P(E)
+    PE_edges::Vector{Float64}
+    Hmin::Float64                       # minimum energy for the density of states
+    Hmax::Float64                       # maximum energy for the density of states
+
     magnetization_mean::Float64         # system magnetization mean
     specific_heat::Float64              # system specific heat  β^-2 <H^2> - <H>^2
 
@@ -130,6 +135,11 @@ mutable struct MaxEnt
         model.H = energy(model)
         model.t = 1
 
+        model.Hmin = -20.0
+        model.Hmax = 20.0
+        nbins = 2 * round(Int64, 2.0^(model.nspins / 3)) # Rice rule 
+        model.PE_edges = LinRange(model.Hmin, model.Hmax, nbins + 1)
+        model.PE_weights = zeros(Float64, nbins)
         return model
     end
 

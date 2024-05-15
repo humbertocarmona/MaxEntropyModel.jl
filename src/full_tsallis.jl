@@ -10,13 +10,16 @@ function full_tsallis!(m::MaxEnt, q::Float64)
     H0 = compute_energy_shift(m, q)
     m.H_vals = Array{Float64}(undef, 2^m.nspins)
     m.H0_vals[m.t] = H0
+
+    m.PE_weights .= 0.0
+
     s = 1
     for p in spin_permutations_iterator(nspins)
         m.s .= collect(p)
         m.H = energy(m)
         Zx = exp_q(-m.β * (m.H + H0), q)
         Zq += Zx
-        m.H_vals[s] = (1 + (1 - q) * (m.H + H0))
+        m.H_vals[s] = m.H
         m.x_mod .= m.x_mod .+ Zx .* m.s
         t = 1
         for i in 1:nspins-1
@@ -25,10 +28,18 @@ function full_tsallis!(m::MaxEnt, q::Float64)
                 t += 1
             end
         end
+        if m.Hmin <= m.H <= m.Hmax
+            k = findfirst(x -> x > m.H, m.PE_edges) - 1
+            m.PE_weights[k] += Zx
+        end
         s += 1
     end
+
+    m.PE_weights ./= sum(m.PE_weights)
+
     m.x_mod ./= Zq
     m.xy_mod ./= Zq
+
     return nothing
 end
 

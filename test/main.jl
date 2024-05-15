@@ -1,3 +1,4 @@
+using Base: nothing_sentinel
 using MaxEntropyModel
 using GLMakie
 using Random, Distributions
@@ -17,36 +18,61 @@ f
 # %%  --------------------------------------------------------------------------
 
 
-nspins = 16;
+nspins = 20;
 h = rand(Normal(0.0, 0.1), nspins);
+# h = 2 * rand(nspins) .- 1
 J = rand(Normal(0.0, 0.1), nspins * (nspins - 1) ÷ 2);
 # %%  --------------------------------------------------------------------------
 S = map(x -> x < 0.5 ? -1 : 1, rand(1000, nspins));
-m = MaxEnt(S, "teste", 'f');
+m1 = MaxEnt(S, "teste", 'f');
+m2 = MaxEnt(S, "teste", 'f');
 
-m.h = copy(h);
-m.J = copy(J);
-full_tsallis!(m, 0.2);
+m1.h = copy(h);
+m1.J = copy(J);
+m2.h = copy(h);
+m2.J = copy(J);
 
-E02 = copy(m.energy_hist);
-full_tsallis!(m, 5.0);
-E5 = copy(m.energy_hist);
+q1 = 5.0
+full_tsallis!(m1, q1);
+
+q2 = 0.0
+full_tsallis!(m2, q2);
+# %%  --------------------------------------------------------------------------
+f = Figure()
+ax = Axis(f[1, 1], yscale=log10)
+ylims!(ax, 1e-9, 1)
+
+x1 = (m1.PE_edges[1:end-1] + m1.PE_edges[2:end]) / 2.0
+x2 = (m2.PE_edges[1:end-1] + m2.PE_edges[2:end]) / 2.0
+y1 = 1.0 * m1.PE_weights
+y2 = 1.0 * m2.PE_weights
+
+lines!(ax, x1, y1, label="$(q1)")
+lines!(ax, x2, y2, label="$(q2)")
+axislegend()
+f
+
 
 # %%  --------------------------------------------------------------------------
-nbins = 64
-h02 = fit(Histogram, E02, nbins=nbins)
-h02 = normalize(h02, mode=:pdf)
-x02 = h02.edges[1]
-x02 = 0.5 * (x02[2:end] + x02[1:end-1])
+nbins = 204
+E1 = 1 .- (1 - q1) .* (m1.H_vals .+ m1.H0_vals[1])
+h1 = fit(Histogram, E1, nbins=nbins)
+h1 = normalize(h1, mode=:pdf)
+x1 = h1.edges[1]
+x1 = 0.5 * (x1[2:end] + x1[1:end-1])
 
-h5 = fit(Histogram, E5, nbins=nbins)
-h5 = normalize(h5, mode=:pdf)
-x5 = h5.edges[1]
-x5 = 0.5 * (x5[2:end] + x5[1:end-1])
+E2 = 1 .- (1 - q2) .* (m2.H_vals .+ m2.H0_vals[1])
+h2 = fit(Histogram, E2, nbins=nbins)
+h2 = normalize(h2, mode=:pdf)
+x2 = h2.edges[1]
+x2 = 0.5 * (x2[2:end] + x2[1:end-1])
 
 
 f = Figure()
 ax = Axis(f[1, 1])
-stairs!(ax, x02, h02.weights)
-stairs!(ax, x5, h5.weights)
+xlims!(ax, 0, nothing)
+scatter!(ax, x1, h1.weights)
+scatter!(ax, x2, h2.weights)
 f
+
+
