@@ -8,8 +8,8 @@ function full_iteration!(m::MaxEnt)
     s = 1
     for p in spin_permutations_iterator(nspins)
         m.s .= collect(p)
-        m.Es = energy(m)
-        Zx = exp(-m.β * m.Es)
+        m.H = energy(m)
+        Zx = exp(-m.β * m.H)
         Z += Zx
 
         m.x_mod .= m.x_mod .+ Zx .* m.s
@@ -45,8 +45,8 @@ function full_measurements!(m::MaxEnt)
     s = 1
     for p in spin_permutations_iterator(nspins)
         m.s .= collect(p)
-        m.Es = energy(m)
-        Zx = exp(-m.β * m.Es)
+        m.H = energy(m)
+        Zx = exp(-m.β * m.H)
         Z += Zx
 
         m.x_mod .= m.x_mod .+ Zx .* m.s
@@ -56,8 +56,8 @@ function full_measurements!(m::MaxEnt)
             t += 1
         end
 
-        m.energy_mean += m.Es * Zx
-        m.specific_heat += m.Es * m.Es * Zx
+        m.energy_mean += m.H * Zx
+        m.specific_heat += m.H * m.H * Zx
         m.magnetization_mean += sum(m.s) * Zx
         t = 1
         for i in 1:nspins-2
@@ -71,7 +71,7 @@ function full_measurements!(m::MaxEnt)
         k = count(isone.(m.s))
         m.ones_dist_mod[k+1] += Zx
 
-        m.H_vals[s] = m.Es
+        m.H_vals[s] = m.H
         s += 1
     end
     m.x_mod ./= Z

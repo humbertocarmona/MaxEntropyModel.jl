@@ -5,7 +5,7 @@ mutable struct MaxEnt
 
     nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
     s::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
-    Es::Float64                         # system energy corresponding to state s
+    H::Float64                         # system energy corresponding to state s
     S_obs::Matrix{<:Number}                # the experimental binary matrix
 
     x_obs::Vector{Float64}              # observed E[ si ]
@@ -128,7 +128,7 @@ mutable struct MaxEnt
         model.err_file = "err.csv"
 
         model.bond = make_bonds(nspins)
-        model.Es = energy(model)
+        model.H = energy(model)
         model.t = 1
 
         return model

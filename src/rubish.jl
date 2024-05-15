@@ -4,7 +4,7 @@
         Random.seed!(m.mc_seed)
         nspins = m.nspins
 
-        m.Es = energy(m)
+        m.H = energy(m)
         m.x_mod .= zeros(nspins)
         m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
         m.H_vals = Array{Float64}(undef, m.n_samples)
@@ -25,7 +25,7 @@
                         m.xy_mod[k] += m.s[i] * m.s[j]
                         k += 1
                     end
-                    m.H_vals[s] = m.Es
+                    m.H_vals[s] = m.H
                     samples[s, :] = copy(m.s)
                     s += 1
                 end
@@ -52,8 +52,8 @@
 
         for p in spin_permutations_iterator(nspins)
             m.s .= collect(p)
-            m.Es = energy(m)
-            Zx = exp(-m.β * m.Es)
+            m.H = energy(m)
+            Zx = exp(-m.β * m.H)
             Z += Zx
             m.x_mod .= m.x_mod .+ Zx .* m.s
             t = 1

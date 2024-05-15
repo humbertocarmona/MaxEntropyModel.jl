@@ -2,7 +2,7 @@ function flip!(m::MaxEnt, i::Int64, rng)
     ΔE = deltaEnergy(m, i)
     if ΔE < 0.0 || rand(rng) < exp(-m.β * ΔE)
         m.s[i] = -m.s[i]
-        m.Es += ΔE
+        m.H += ΔE
     end
 end
 
@@ -10,7 +10,7 @@ function metropolis_iteration!(m::MaxEnt)
     rng = Xoshiro(m.mc_seed)
     nspins = m.nspins
 
-    m.Es = energy(m)
+    m.H = energy(m)
 
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
@@ -51,7 +51,7 @@ function metropolis_measurements!(m::MaxEnt)
     rng = Xoshiro(m.mc_seed)
     nspins = m.nspins
 
-    m.Es = energy(m)
+    m.H = energy(m)
 
     m.x_mod .= zeros(nspins)
     m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
@@ -81,9 +81,9 @@ function metropolis_measurements!(m::MaxEnt)
                     m.xy_mod[k] += m.s[i] * m.s[j]
                     k += 1
                 end
-                m.H_vals[s] = m.Es
-                m.energy_mean += m.Es
-                m.specific_heat += m.Es * m.Es
+                m.H_vals[s] = m.H
+                m.energy_mean += m.H
+                m.specific_heat += m.H * m.H
                 m.magnetization_mean += sum(m.s)
                 t = 1
                 for i in 1:nspins-2
@@ -138,8 +138,8 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
             m.xy_mod[k] += m.s[i] * m.s[j]
             k += 1
         end
-        m.energy_mean += m.Es
-        m.specific_heat += m.Es * m.Es
+        m.energy_mean += m.H
+        m.specific_heat += m.H * m.H
         m.magnetization_mean += sum(m.s)
         t = 1
         for i in 1:nspins-2
@@ -152,7 +152,7 @@ function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
         end
         k = count(isone.(m.s))
         m.ones_dist_mod[k+1] += 1
-        m.H_vals[s] = m.Es
+        m.H_vals[s] = m.H
     end
 
     m.x_mod ./= m.n_samples

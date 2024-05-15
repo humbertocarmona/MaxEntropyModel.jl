@@ -84,6 +84,6 @@ function read_model(filename::String)
     haskey(obj, "mc_seed") && (model.mc_seed = obj.mc_seed)
     haskey(obj, "n_rept") && (model.n_rept = obj.n_rept)
 
-    model.Es = energy(model)
+    model.H = energy(model)
     return model
 end

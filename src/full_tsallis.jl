@@ -13,10 +13,10 @@ function full_tsallis!(m::MaxEnt, q::Float64)
     s = 1
     for p in spin_permutations_iterator(nspins)
         m.s .= collect(p)
-        m.Es = energy(m)
-        Zx = exp_q(-m.β * (m.Es + H0), q)
+        m.H = energy(m)
+        Zx = exp_q(-m.β * (m.H + H0), q)
         Zq += Zx
-        m.H_vals[s] = (1 + (1 - q) * (m.Es + H0))
+        m.H_vals[s] = (1 + (1 - q) * (m.H + H0))
         m.x_mod .= m.x_mod .+ Zx .* m.s
         t = 1
         for i in 1:nspins-1
@@ -53,8 +53,8 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
     s = 1
     for p in spin_permutations_iterator(nspins)
         m.s .= collect(p)
-        m.Es = energy(m)
-        Zx = exp_q(-m.β * (m.Es + H0), q)
+        m.H = energy(m)
+        Zx = exp_q(-m.β * (m.H + H0), q)
         Zq += Zx
 
         m.x_mod .= m.x_mod .+ Zx .* m.s
@@ -64,8 +64,8 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
             t += 1
         end
 
-        m.energy_mean += m.Es * Zx
-        m.specific_heat += m.Es * m.Es * Zx
+        m.energy_mean += m.H * Zx
+        m.specific_heat += m.H * m.H * Zx
         m.magnetization_mean += sum(m.s) * Zx
         t = 1
         for i in 1:nspins-2
@@ -79,7 +79,7 @@ function full_tsallis_measurements!(m::MaxEnt, q::Float64)
         k = count(isone.(m.s))
         m.ones_dist_mod[k+1] += Zx
 
-        m.H_vals[s] = m.Es
+        m.H_vals[s] = m.H
         s += 1
     end
     m.x_mod ./= Zq
