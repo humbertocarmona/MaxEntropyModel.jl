@@ -19,6 +19,7 @@ mutable struct MaxEnt
     pearson_mod::Vector{Float64}        # store model Pearson correlation coefficient 
     ones_dist_mod::Vector{Float64}      # model computed P[k spins up]
 
+    q::Float64                          # Tsallis q
     β::Float64                          # inverse temperature used to train the model
     h::Vector{Float64}                  # model local fields
     J::Vector{Float64}                  # model couplings
@@ -65,7 +66,7 @@ mutable struct MaxEnt
 
         model.runid = runid
         model.nspins = nspins
-        model.s = map(x -> x < 0.5 ? 1 : -1, rand(nspins))   # random initial state
+        model.sj = map(x -> x < 0.5 ? 1 : -1, rand(nspins))   # random initial state
         model.S_obs = copy(S)
 
         model.x_obs = mean_1st_order_moments(S)
@@ -127,8 +128,86 @@ mutable struct MaxEnt
         model.bond = make_bonds(nspins)
         model.Hj = energy(model)
         model.t = 1
+        model.q = 1.0
 
-        if run_type == 'f'
+        if run_type in ['f', 'q']
+            model.Pj_vals = Array{Float64}(undef, 2^nspins)
+            model.Hj_vals = Array{Float64}(undef, 2^nspins)
+        else
+            model.Pj_vals = Array{Float64}(undef, model.n_samples)
+            model.Hj_vals = Array{Float64}(undef, model.n_samples)
+        end
+
+
+        return model
+    end
+
+    function MaxEnt(m::MaxEnt, runid="test", run_type='f')
+        nspins = m.nspins
+        model = new()
+        model.model = "MaxEnt"
+
+        model.runid = runid
+        model.nspins = nspins
+        model.sj = map(x -> x < 0.5 ? 1 : -1, rand(nspins))   # random initial state
+        model.S_obs = copy(m.S_obs)
+
+        model.x_obs = copy(m.x_mod)
+        model.xy_obs = copy(m.xy_mod)
+        model.pearson_obs = copy(m.pearson_mod)
+        model.xyz_obs = copy(m.xyz_mod)
+        model.ones_dist_obs = copy(m.ones_dist_mod)
+
+
+        model.x_mod = zeros(size(model.x_obs))
+        model.xy_mod = zeros(size(model.xy_obs))
+        model.pearson_mod = zeros(size(model.pearson_obs))
+        model.xyz_mod = zeros(size(model.xyz_obs))
+        model.ones_dist_mod = zeros(size(model.ones_dist_obs))
+
+        model.Δx = zeros(size(model.x_obs))
+        model.Δxy = zeros(size(model.xy_obs))
+        init_parameters!(model)
+        model.β = m.β
+
+        model.H_mean = 0.0 # average energy
+        model.M_mean = 0.0 # average magnetization
+        model.CV = 0.0 # specific heat
+
+        #Random Laser specific params
+        model.λwindow = m.λwindow
+        model.run_type = run_type
+        model.init_file = m.init_file
+        model.comment = m.comment
+        model.date_today = ""
+
+        model.ηh = m.ηh
+        model.ηJ = m.ηJ
+        model.γh = m.γh
+        model.γJ = m.γJ
+        model.α = m.α
+        model.Δx = zeros(size(model.x_obs))
+        model.Δxy = zeros(size(model.xy_obs))
+        model.n_relax_steps = m.n_relax_steps
+        model.tol = m.tol
+
+        model.H0_vals = Array{Float64}(undef, model.n_relax_steps)
+
+        model.n_samples = m.n_samples
+        model.n_rept = m.n_rept
+        model.n_coherence = m.n_coherence
+        model.n_equilibrium = m.n_equilibrium
+        model.mc_seed = m.mc_seed
+
+        model.result_file = "safe.json"
+        model.err_file = "err.csv"
+
+        model.bond = make_bonds(nspins)
+        model.Hj = energy(model)
+        model.t = 1
+        model.q = m.q
+
+        if run_type in ['f', 'q']
             model.Pj_vals = Array{Float64}(undef, 2^nspins)
             model.Hj_vals = Array{Float64}(undef, 2^nspins)
         else

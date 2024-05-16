@@ -239,10 +239,9 @@ end
 
 @inline function exp_q(x::Float64, q::Float64)
     (q == 1.0) && (return exp(x))
-    Q = 1.0 - q
-    y = (1 + Q * x)
+    y = (1 + (1 - q) * x)
     (y < 0.0) && (return 0.0)
-    return y^(1.0 / Q)
+    return y^(1.0 / (1.0 - q))
 end
 
 @inline function ln_q(x::Float64, q::Float64)

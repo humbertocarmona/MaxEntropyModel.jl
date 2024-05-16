@@ -1,12 +1,12 @@
-function full_tsallis!(model::MaxEnt, q::Float64; reg=false)
+function full_tsallis!(model::MaxEnt; reg=false)
     nspins = model.nspins
     @assert nspins < 25 "maximum full enesemble system is 24, found $nspins"
 
-    debug(LOGGER, "aqui q = $q")
+    q = model.q
     Zq = 0.0
     model.x_mod .= zeros(nspins)
     model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-
+    resize!(model.H0_vals, model.n_relax_steps)
     H0 = compute_energy_shift(model, q)
     model.H0_vals[model.t] = H0
 
@@ -37,10 +37,11 @@ function full_tsallis!(model::MaxEnt, q::Float64; reg=false)
     return nothing
 end
 
-function full_tsallis_measurements!(model::MaxEnt, q::Float64; reg=false)
+function full_tsallis_measurements!(model::MaxEnt; reg=false)
     nspins = model.nspins
     @assert nspins < 25 "maximum full enesemble system is 24, found $nspins"
 
+    q = model.q
     Zq = 0.0
     model.x_mod .= zeros(nspins)
     model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
@@ -52,7 +53,6 @@ function full_tsallis_measurements!(model::MaxEnt, q::Float64; reg=false)
     model.ones_dist_mod .= zeros(nspins + 1)
 
     H0 = compute_energy_shift(model, q)
-    model.H0_vals[model.t] = H0
 
     j = 1
     for s in spin_permutations_iterator(nspins)

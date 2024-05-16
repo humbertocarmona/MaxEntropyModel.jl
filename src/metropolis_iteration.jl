@@ -121,7 +121,7 @@ function metropolis_measurements!(model::MaxEnt)
 end
 
 
-function metropols_measurements!(model::MaxEnt, samples::Matrix{Int64})
+function metropolis_measurements!(model::MaxEnt, samples::Matrix{Int64})
     nsamples, nspins = size(samples)
     @assert model.nspins == nspins "got m.nspins=$(model.nspins) != $(nspins)"
 

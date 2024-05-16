@@ -14,6 +14,8 @@ function max_entropy_relax!(m::MaxEnt)
             t0 = time()
             if m.run_type == 'f'
                 full_iteration!(m)
+            elseif m.run_type == 'q'
+                full_tsallis!(m)
             else
                 metropolis_iteration!(m)
             end
@@ -25,16 +27,19 @@ function max_entropy_relax!(m::MaxEnt)
 
             err = (err_x + 2 * err_xy) / 3
             write(file, "$(m.t),$(t1),$(err_x),$(err_xy)\n")
-            mess1 = @sprintf "%18s|t:%5d|t(s):%6.2f" mess0 m.t t1
-            mess2 = @sprintf "%s|err_x:%8.5f|err_xy:%8.5f|err:%8.5f" mess1 err_x err_xy err
-            info(LOGGER, mess2)
-
+            if m.t == 1 || m.t % 100 == 0
+                mess1 = @sprintf "%18s|t:%5d|t(s):%6.2f" mess0 m.t t1
+                mess2 = @sprintf "%s|err_x:%8.5f|err_xy:%8.5f|err:%8.5f" mess1 err_x err_xy err
+                info(LOGGER, mess2)
+            end
             updated_parameters!(m)
             m.t += 1
         end # ends relax loop
 
         if m.run_type == 'f'
             full_measurements!(m)
+        elseif m.run_type == 'q'
+            full_tsallis_measurements!(m)
         else
             samples = metropolis_measuremments!(m)
         end

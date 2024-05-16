@@ -7,72 +7,98 @@ using Statistics
 using StatsBase
 using LinearAlgebra
 
-# %%  --------------------------------------------------------------------------
-f = Figure()
-ax = Axis(f[1, 1])
-for q in 0.0:0.5:2
-    lines!(ax, -5:0.01:5, x -> exp_q(-x^2, q), label="$q")
-end
-axislegend()
-f
-# %%  --------------------------------------------------------------------------
-
-
-nspins = 20;
+# %%
+# generate model params
+nspins = 16;
 h = rand(Normal(0.0, 0.1), nspins);
-# h = 2 * rand(nspins) .- 1
-J = rand(Normal(0.0, 0.1), nspins * (nspins - 1) ÷ 2);
-# %%  --------------------------------------------------------------------------
+h = 2 * rand(nspins) .- 1
+J = rand(Normal(0.0, 0.2), nspins * (nspins - 1) ÷ 2);
+
+# %%
+
+reg = false
+
 S = map(x -> x < 0.5 ? -1 : 1, rand(1000, nspins));
 m1 = MaxEnt(S, "teste", 'f');
-m2 = MaxEnt(S, "teste", 'f');
+
 
 m1.h = copy(h);
 m1.J = copy(J);
-m2.h = copy(h);
-m2.J = copy(J);
+m1.q = 1.0
 
-q1 = 5.0
-full_tsallis!(m1, q1);
-
-q2 = 0.0
-full_tsallis!(m2, q2);
-# %%  --------------------------------------------------------------------------
-f = Figure()
-ax = Axis(f[1, 1], yscale=log10)
-ylims!(ax, 1e-9, 1)
-
-x1 = (m1.PE_edges[1:end-1] + m1.PE_edges[2:end]) / 2.0
-x2 = (m2.PE_edges[1:end-1] + m2.PE_edges[2:end]) / 2.0
-y1 = 1.0 * m1.PE_weights
-y2 = 1.0 * m2.PE_weights
-
-lines!(ax, x1, y1, label="$(q1)")
-lines!(ax, x2, y2, label="$(q2)")
-axislegend()
-f
-
+full_measurements!(m1);
 
 # %%  --------------------------------------------------------------------------
-nbins = 204
-E1 = 1 .- (1 - q1) .* (m1.Hj_vals .+ m1.H0_vals[1])
-h1 = fit(Histogram, E1, nbins=nbins)
-h1 = normalize(h1, mode=:pdf)
-x1 = h1.edges[1]
-x1 = 0.5 * (x1[2:end] + x1[1:end-1])
+m2 = MaxEnt(m1, "teste2", 'q')
+m2.q = 0.9
+m2.tol = 1.0e-7
+m2.n_relax_steps = 2000
+max_entropy_relax!(m2)
 
-E2 = 1 .- (1 - q2) .* (m2.Hj_vals .+ m2.H0_vals[1])
-h2 = fit(Histogram, E2, nbins=nbins)
-h2 = normalize(h2, mode=:pdf)
-x2 = h2.edges[1]
-x2 = 0.5 * (x2[2:end] + x2[1:end-1])
+# %%
 
-
+nbins = 150
 f = Figure()
-ax = Axis(f[1, 1])
-xlims!(ax, 0, nothing)
-scatter!(ax, x1, h1.weights)
-scatter!(ax, x2, h2.weights)
+ax1 = Axis(f[1, 1], xlabel="E", ylabel="N(E)")
+ax2 = Axis(f[1, 1], ylabel="P(E)", yaxisposition=:right, rightspinevisible=false)
+
+hidexdecorations!(ax2, grid=true)
+hidespines!(ax2)
+linkxaxes!(ax1, ax2)
+
+m = m2;
+q = m.q;
+H0 = m.H0_vals[1];
+var = reg ? m.Hj_vals .+ H0 : m.Hj_vals;
+vmax = maximum(var);
+vmin = minimum(var);
+println((vmax, vmin))
+dx = (vmax - vmin) / nbins;
+edges = LinRange(vmin - dx / 2, vmax + dx / 2, nbins + 1);
+hvar = fit(Histogram, var, edges);
+y = hvar.weights;
+x = hvar.edges[1];
+x = 0.5 * (x[2:end] + x[1:end-1]);
+
+Pj = zeros(size(x))
+for j in eachindex(var)
+    hj = var[j]
+    k = findfirst(x -> x > hj, edges) - 1
+    Pj[k] += m.Pj_vals[j]
+end
+Pj /= sum(Pj)
+println(Pj)
+
+P = reg ? y .* exp_q.(-(x + H0, q)) : y .* exp_q.(-x, q);
+Z = sum(P);
+y1 = exp_q.(-(x), q);
+y1 ./= sum(y1);
+y1 /= dx;
+lines!(ax1, x, y, label="N(E)", color=:dodgerblue);
+# lines!(ax2, x, P / dx / Z, linewidth=2, color=:black, label="P(E)");
+lines!(ax2, x, Pj / dx, linewidth=2, color=:black, label="P(E)");
+lines!(ax2, x, y1, color=:red, linestyle=:dash, label="exp_q(-E)");
+Label(f[1, 1, Top()], "q = $q", fontsize=24, padding=(0, 0, 10, 0));
+axislegend(ax1, position=:lt, framevisible=false);
+axislegend(ax2, position=:rt, framevisible=false);
 f
 
+# %%
+
+
+
+
+
+
+
+
+# %%
+# just test exp_q
+f = Figure();
+ax1 = Axis(f[1, 1]);
+for q in 0.0:0.5:2
+    lines!(ax1, -5:0.01:5, x -> exp_q(-x^2, q), label="$q")
+end
+axislegend();
+f
 
