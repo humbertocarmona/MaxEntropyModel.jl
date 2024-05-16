@@ -20,6 +20,7 @@ mutable struct MaxEnt
     ones_dist_mod::Vector{Float64}      # model computed P[k spins up]
 
     q::Float64                          # Tsallis q
+    reg::Bool                           # uses or not André's H0 reguralization
     β::Float64                          # inverse temperature used to train the model
     h::Vector{Float64}                  # model local fields
     J::Vector{Float64}                  # model couplings
@@ -118,7 +119,6 @@ mutable struct MaxEnt
         model.n_samples = 4000 * nspins
         model.n_rept = 1 * nspins
         model.n_coherence = 1 * nspins
-        debug(LOGGER, "n_coherene=$(model.n_coherence)")
         model.n_equilibrium = 100 * nspins
         model.mc_seed = 1234
 
@@ -129,7 +129,7 @@ mutable struct MaxEnt
         model.Hj = energy(model)
         model.t = 1
         model.q = 1.0
-
+        model.reg = false
         if run_type in ['f', 'q']
             model.Pj_vals = Array{Float64}(undef, 2^nspins)
             model.Hj_vals = Array{Float64}(undef, 2^nspins)
@@ -205,8 +205,8 @@ mutable struct MaxEnt
         model.bond = make_bonds(nspins)
         model.Hj = energy(model)
         model.t = 1
-        model.q = m.q
-
+        model.q = 1.0
+        model.reg = false
         if run_type in ['f', 'q']
             model.Pj_vals = Array{Float64}(undef, 2^nspins)
             model.Hj_vals = Array{Float64}(undef, 2^nspins)

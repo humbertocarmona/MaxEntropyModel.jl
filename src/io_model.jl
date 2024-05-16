@@ -51,9 +51,13 @@ function read_model(filename::String)
     haskey(obj, "J") && (model.J = Vector{Float64}(obj.J))
 
     haskey(obj, "β") && (model.β = obj.β)
+    haskey(obj, "q") && (model.q = obj.q)
+    haskey(obj, "reg") && (model.reg = obj.reg)
 
     haskey(obj, "H_mean") && (model.H_mean = obj.H_mean)
     haskey(obj, "Hj_vals") && (model.Hj_vals = Vector{Float64}(obj.Hj_vals))
+    haskey(obj, "Pj_vals") && (model.Pj_vals = Vector{Float64}(obj.Pj_vals))
+    haskey(obj, "H0_vals") && (model.H0_vals = Vector{Float64}(obj.H0_vals))
     haskey(obj, "M_mean") && (model.M_mean = obj.M_mean)
     haskey(obj, "CV") && (model.CV = obj.CV)
 
@@ -84,6 +88,6 @@ function read_model(filename::String)
     haskey(obj, "mc_seed") && (model.mc_seed = obj.mc_seed)
     haskey(obj, "n_rept") && (model.n_rept = obj.n_rept)
 
-    modelHj = energy(model)
+    model.Hj = energy(model)
     return model
 end
