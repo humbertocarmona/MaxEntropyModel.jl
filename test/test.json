@@ -4187,8 +4187,8 @@
     "H_mean": 0,
     "energy_hist": [
     ],
-    "magnetization_mean": 0,
-    "specific_heat": 0,
+    "M_mean": 0,
+    "CV": 0,
     "λwindow": [
         1055.3,
         1057.2

@@ -55,13 +55,13 @@ f
 
 # %%  --------------------------------------------------------------------------
 nbins = 204
-E1 = 1 .- (1 - q1) .* (m1.H_vals .+ m1.H0_vals[1])
+E1 = 1 .- (1 - q1) .* (m1.Hj_vals .+ m1.H0_vals[1])
 h1 = fit(Histogram, E1, nbins=nbins)
 h1 = normalize(h1, mode=:pdf)
 x1 = h1.edges[1]
 x1 = 0.5 * (x1[2:end] + x1[1:end-1])
 
-E2 = 1 .- (1 - q2) .* (m2.H_vals .+ m2.H0_vals[1])
+E2 = 1 .- (1 - q2) .* (m2.Hj_vals .+ m2.H0_vals[1])
 h2 = fit(Histogram, E2, nbins=nbins)
 h2 = normalize(h2, mode=:pdf)
 x2 = h2.edges[1]

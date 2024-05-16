@@ -1,170 +1,174 @@
-function flip!(m::MaxEnt, i::Int64, rng)
-    ΔE = deltaEnergy(m, i)
-    if ΔE < 0.0 || rand(rng) < exp(-m.β * ΔE)
-        m.s[i] = -m.s[i]
-        m.H += ΔE
+function flip!(model::MaxEnt, i::Int64, rng)
+    ΔE = deltaEnergy(model, i)
+    if ΔE < 0.0 || rand(rng) < exp(-model.β * ΔE)
+        model.sj[i] = -model.sj[i]
+        model.Hj += ΔE
     end
 end
 
-function metropolis_iteration!(m::MaxEnt)
-    rng = Xoshiro(m.mc_seed)
-    nspins = m.nspins
+function metropolis_iteration!(model::MaxEnt)
+    rng = Xoshiro(model.mc_seed)
+    nspins = model.nspins
 
-    m.H = energy(m)
+    model.Hj = energy(model)
 
-    m.x_mod .= zeros(nspins)
-    m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
+    model.x_mod .= zeros(nspins)
+    model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
+    model.Pj_vals = Array{Float64}(undef, model.n_samples)
+    model.Hj_vals = Array{Float64}(undef, model.n_samples)
 
-    n_flips = m.n_samples * m.n_coherence / m.n_rept + m.n_equilibrium
+    n_flips = model.n_samples * model.n_coherence / model.n_rept + model.n_equilibrium
 
-    s = 1
-    for _ in 1:m.n_rept
-        m.s .= -1
+
+    j = 1
+    for _ in 1:model.n_rept
         for n in 1:n_flips
-            t = n - m.n_equilibrium
+            t = n - model.n_equilibrium
 
-            s_flip = rand(rng, 1:m.nspins)
-            flip!(m, s_flip, rng)
+            s_flip = rand(rng, 1:model.nspins)
+            flip!(model, s_flip, rng)
 
-            if (t > 0) && (t % m.n_coherence == 0)
-                m.x_mod .= m.x_mod .+ m.s
-                k = 1
-                for i in 1:nspins-1, j in i+1:nspins
-                    m.xy_mod[k] += m.s[i] * m.s[j]
-                    k += 1
+            if (t > 0) && (t % model.n_coherence == 0)
+                model.x_mod .= model.x_mod .+ model.sj
+                i = 1
+                for k in 1:nspins-1, l in k+1:nspins
+                    model.xy_mod[i] += model.sj[k] * model.sj[l]
+                    i += 1
                 end
-                s += 1
+                model.Hj_vals[j] = model.Hj
+                j += 1
             end
         end
     end
     # s -= 1
     # @assert s == m.n_samples "expected s=$(m.n_samples), got $s"
 
-    m.x_mod ./= m.n_samples
-    m.xy_mod ./= m.n_samples
+    model.x_mod ./= model.n_samples
+    model.xy_mod ./= model.n_samples
 
     return nothing
 end
 
 
-function metropolis_measurements!(m::MaxEnt)
-    rng = Xoshiro(m.mc_seed)
-    nspins = m.nspins
+function metropolis_measurements!(model::MaxEnt)
+    rng = Xoshiro(model.mc_seed)
+    nspins = model.nspins
 
-    m.H = energy(m)
+    model.Hj = energy(model)
 
-    m.x_mod .= zeros(nspins)
-    m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-    m.H_vals = Array{Float64}(undef, m.n_samples)
-    m.H_mean = 0.0
+    model.x_mod .= zeros(nspins)
+    model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
+    model.Pj_vals = Array{Float64}(undef, model.n_samples)
+    model.Hj_vals = Array{Float64}(undef, model.n_samples)
+
+    model.H_mean = 0.0
     H2_mean = 0.0
-    m.magnetization_mean = 0.0
-    m.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
-    m.ones_dist_mod .= zeros(nspins + 1)
-    samples = zeros(Int64, (m.n_samples, nspins))
+    model.M_mean = 0.0
+    model.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
+    model.ones_dist_mod .= zeros(nspins + 1)
+    samples = zeros(Int64, (model.n_samples, nspins))
 
-    n_flips = m.n_samples * m.n_coherence / m.n_rept + m.n_equilibrium
+    n_flips = model.n_samples * model.n_coherence / model.n_rept + model.n_equilibrium
 
-    s = 1
-    for _ in 1:m.n_rept
-        m.s .= -1
+    j = 1
+    for _ in 1:model.n_rept
         for n in 1:n_flips
-            t = n - m.n_equilibrium
+            t = n - model.n_equilibrium
 
-            s_flip = rand(rng, 1:m.nspins)
-            flip!(m, s_flip, rng)
+            s_flip = rand(rng, 1:model.nspins)
+            flip!(model, s_flip, rng)
 
-            if (t > 0) && (t % m.n_coherence == 0)
-                m.x_mod .= m.x_mod .+ m.s
-                k = 1
-                for i in 1:nspins-1, j in i+1:nspins
-                    m.xy_mod[k] += m.s[i] * m.s[j]
-                    k += 1
+            if (t > 0) && (t % model.n_coherence == 0)
+                model.x_mod .= model.x_mod .+ model.sj
+                i = 1
+                for k in 1:nspins-1, l in k+1:nspins
+                    model.xy_mod[i] += model.sj[k] * model.sj[l]
+                    i += 1
                 end
-                m.H_vals[s] = m.H
-                m.H_mean += m.H
-                H2_mean += m.H * m.H
-                m.magnetization_mean += sum(m.s)
-                t = 1
-                for i in 1:nspins-2
-                    for j in i+1:nspins-1
-                        for k in j+1:nspins
-                            m.xyz_mod[t] += m.s[i] * m.s[j] * m.s[k]
-                            t += 1
+                model.Hj_vals[j] = model.Hj
+                model.H_mean += model.Hj
+                H2_mean += model.Hj * model.Hj
+                model.M_mean += sum(model.sj)
+                i = 1
+                for k in 1:nspins-2
+                    for l in k+1:nspins-1
+                        for m in l+1:nspins
+                            model.xyz_mod[i] += model.sj[k] * model.sj[l] * model.sj[m]
+                            i += 1
                         end
                     end
                 end
-                k = count(isone.(m.s))
-                m.ones_dist_mod[k+1] += 1
-                samples[s, :] = copy(m.s)
-                s += 1
+                k = count(isone.(model.sj))
+                model.ones_dist_mod[k+1] += 1
+                samples[j, :] = copy(model.sj)
+                j += 1
             end
         end
     end
     # s -= 1
     # @assert s == m.n_samples "expected s=$(m.n_samples), got $s"
 
-    m.x_mod ./= m.n_samples
-    m.xy_mod ./= m.n_samples
-    pearson_mod!(m)
-    m.H_mean /= m.n_samples
-    H2_mean /= m.n_samples
-    m.specific_heat = m.β^2 * (H2_mean - m.H_mean^2)
-    m.magnetization_mean /= m.n_samples
-    m.xyz_mod ./= m.n_samples
-    m.ones_dist_mod ./= sum(m.ones_dist_mod)
+    model.x_mod ./= model.n_samples
+    model.xy_mod ./= model.n_samples
+    pearson_mod!(model)
+    model.H_mean /= model.n_samples
+    H2_mean /= model.n_samples
+    model.CV = model.β^2 * (H2_mean - model.H_mean^2)
+    model.M_mean /= model.n_samples
+    model.xyz_mod ./= model.n_samples
+    model.ones_dist_mod ./= sum(model.ones_dist_mod)
     return samples
 end
 
 
-function metropols_measurements!(m::MaxEnt, samples::Matrix{Int64})
+function metropols_measurements!(model::MaxEnt, samples::Matrix{Int64})
     nsamples, nspins = size(samples)
-    @assert m.nspins == nspins "got m.nspins=$(m.nspins) != $(nspins)"
+    @assert model.nspins == nspins "got m.nspins=$(model.nspins) != $(nspins)"
 
-    m.x_mod .= zeros(nspins)
-    m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-    m.H_vals = Array{Float64}(undef, m.n_samples)
-    m.H_mean = 0.0
+    model.x_mod .= zeros(nspins)
+    model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
+    model.Hj_vals = Array{Float64}(undef, model.n_samples)
+    model.H_mean = 0.0
     H2_mean = 0.0
-    m.magnetization_mean = 0.0
-    m.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
-    m.ones_dist_mod .= zeros(nspins + 1)
+    model.M_mean = 0.0
+    model.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
+    model.ones_dist_mod .= zeros(nspins + 1)
 
-    for n in 1:nsamples
-        m.s = samples[:, n]
-        m.x_mod .= m.x_mod .+ m.s
-        k = 1
-        for i in 1:nspins-1, j in i+1:nspins
-            m.xy_mod[k] += m.s[i] * m.s[j]
-            k += 1
+    for j in 1:nsamples
+        model.sj = samples[:, j]
+        model.x_mod .= model.x_mod .+ model.sj
+        i = 1
+        for k in 1:nspins-1, l in k+1:nspins
+            model.xy_mod[i] += model.sj[k] * model.sj[l]
+            i += 1
         end
-        m.H_mean += m.H
-        H2_mean += m.H * m.H
-        m.magnetization_mean += sum(m.s)
-        t = 1
-        for i in 1:nspins-2
-            for j in i+1:nspins-1
-                for k in j+1:nspins
-                    m.xyz_mod[t] += m.s[i] * m.s[j] * m.s[k]
-                    t += 1
+        model.H_mean += model.Hj
+        H2_mean += model.Hj * model.Hj
+        model.M_mean += sum(model.sj)
+        i = 1
+        for k in 1:nspins-2
+            for l in k+1:nspins-1
+                for m in l+1:nspins
+                    model.xyz_mod[i] += model.sj[k] * model.sj[l] * model.sj[m]
+                    i += 1
                 end
             end
         end
-        k = count(isone.(m.s))
-        m.ones_dist_mod[k+1] += 1
-        m.H_vals[s] = m.H
+        k = count(isone.(model.sj))
+        model.ones_dist_mod[k+1] += 1
+        model.Hj_vals[j] = model.Hj
     end
 
-    m.x_mod ./= m.n_samples
-    m.xy_mod ./= m.n_samples
-    m.H_mean /= m.n_samples
-    H2_mean /= m.n_samples
-    m.specific_heat = m.β^2 * (H2_mean - m.H_mean^2)
-    m.magnetization_mean /= m.n_samples
-    m.xyz_mod ./= m.n_samples
-    m.ones_dist_mod ./= sum(m.ones_dist_mod)
+    model.x_mod ./= model.n_samples
+    model.xy_mod ./= model.n_samples
+    model.H_mean /= model.n_samples
+    H2_mean /= model.n_samples
+    model.CV = model.β^2 * (H2_mean - model.H_mean^2)
+    model.M_mean /= model.n_samples
+    model.xyz_mod ./= model.n_samples
+    model.ones_dist_mod ./= sum(model.ones_dist_mod)
 
-    pearson_mod!(m)
+    pearson_mod!(model)
 
 
 end

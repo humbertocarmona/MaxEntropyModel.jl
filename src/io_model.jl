@@ -32,7 +32,7 @@ function read_model(filename::String)
 
     haskey(obj, "runid") && (model.runid = obj.runid)
     haskey(obj, "nspins") && (model.nspins = obj.nspins)
-    haskey(obj, "s") && (model.s = Vector{Float64}(obj.s))
+    haskey(obj, "s") && (model.sj = Vector{Float64}(obj.sj))
     haskey(obj, "S_obs") && (model.S_obs = reshape(S_obs, (nsamples, nspins)))
 
     haskey(obj, "x_obs") && (model.x_obs = Vector{Float64}(obj.x_obs))
@@ -53,9 +53,9 @@ function read_model(filename::String)
     haskey(obj, "β") && (model.β = obj.β)
 
     haskey(obj, "H_mean") && (model.H_mean = obj.H_mean)
-    haskey(obj, "H_vals") && (model.H_vals = Vector{Float64}(obj.H_vals))
-    haskey(obj, "magnetization_mean") && (model.magnetization_mean = obj.magnetization_mean)
-    haskey(obj, "specific_heat") && (model.specific_heat = obj.specific_heat)
+    haskey(obj, "Hj_vals") && (model.Hj_vals = Vector{Float64}(obj.Hj_vals))
+    haskey(obj, "M_mean") && (model.M_mean = obj.M_mean)
+    haskey(obj, "CV") && (model.CV = obj.CV)
 
     # Random Laser specific params
     haskey(obj, "λwindow") && (model.λwindow = Vector{Float64}(obj.λwindow))
@@ -84,6 +84,6 @@ function read_model(filename::String)
     haskey(obj, "mc_seed") && (model.mc_seed = obj.mc_seed)
     haskey(obj, "n_rept") && (model.n_rept = obj.n_rept)
 
-    model.H = energy(model)
+    modelHj = energy(model)
     return model
 end

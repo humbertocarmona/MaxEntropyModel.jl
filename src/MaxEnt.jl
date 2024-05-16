@@ -1,11 +1,10 @@
-
 mutable struct MaxEnt
     model::String
     runid::String
 
     nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
-    s::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
-    H::Float64                          # system energy corresponding to state s
+    sj::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
+    Hj::Float64                          # system energy corresponding to state s
     S_obs::Matrix{<:Number}             # the experimental binary matrix
 
     x_obs::Vector{Float64}              # observed E[ si ]
@@ -20,22 +19,16 @@ mutable struct MaxEnt
     pearson_mod::Vector{Float64}        # store model Pearson correlation coefficient 
     ones_dist_mod::Vector{Float64}      # model computed P[k spins up]
 
+    β::Float64                          # inverse temperature used to train the model
     h::Vector{Float64}                  # model local fields
     J::Vector{Float64}                  # model couplings
 
-    β::Float64                          # inverse temperature used to train the model
-
-    H_mean::Float64                     # mean system energy
-    H_vals::Vector{Float64}             # store energy values for each state
+    Hj_vals::Vector{Float64}             # store energy values for each state
     H0_vals::Vector{Float64}            # store H0 values (Andre's correction) for each parameter set
-
-    PE_weights::Vector{Float64}                 # store density of states P(E)
-    PE_edges::Vector{Float64}
-    Hmin::Float64                       # minimum energy for the density of states
-    Hmax::Float64                       # maximum energy for the density of states
-
-    magnetization_mean::Float64         # system magnetization mean
-    specific_heat::Float64              # system specific heat  β^-2 <H^2> - <H>^2
+    Pj_vals::Vector{Float64}            # store all probabilities Pj for state sj
+    H_mean::Float64                     # mean system energy
+    M_mean::Float64                         # system magnetization mean
+    CV::Float64              # system specific heat  β^-2 <H^2> - <H>^2
 
     # Random Laser specific parameters
     run_type::Char
@@ -63,6 +56,7 @@ mutable struct MaxEnt
     # helper bond[i,j] = t, the t-th element in J or xy
     bond::Matrix{Int64}
     t::Int64
+
 
     function MaxEnt(S::Matrix{<:Number}, runid="test", run_type='f')
         nspins = size(S, 2)
@@ -98,9 +92,8 @@ mutable struct MaxEnt
         model.β = 1.0
 
         model.H_mean = 0.0 # average energy
-        model.H_vals = Float64[]
-        model.magnetization_mean = 0.0 # average magnetization
-        model.specific_heat = 0.0 # specific heat
+        model.M_mean = 0.0 # average magnetization
+        model.CV = 0.0 # specific heat
 
         #Random Laser specific params
         model.λwindow = [1055.3, 1057.2]
@@ -132,14 +125,18 @@ mutable struct MaxEnt
         model.err_file = "err.csv"
 
         model.bond = make_bonds(nspins)
-        model.H = energy(model)
+        model.Hj = energy(model)
         model.t = 1
 
-        model.Hmin = -20.0
-        model.Hmax = 20.0
-        nbins = 2 * round(Int64, 2.0^(model.nspins / 3)) # Rice rule 
-        model.PE_edges = LinRange(model.Hmin, model.Hmax, nbins + 1)
-        model.PE_weights = zeros(Float64, nbins)
+        if run_type == 'f'
+            model.Pj_vals = Array{Float64}(undef, 2^nspins)
+            model.Hj_vals = Array{Float64}(undef, 2^nspins)
+        else
+            model.Pj_vals = Array{Float64}(undef, model.n_samples)
+            model.Hj_vals = Array{Float64}(undef, model.n_samples)
+        end
+
+
         return model
     end
 

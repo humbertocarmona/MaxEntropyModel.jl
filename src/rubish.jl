@@ -4,10 +4,10 @@
         Random.seed!(m.mc_seed)
         nspins = m.nspins
 
-        m.H = energy(m)
+        m.Hj = energy(m)
         m.x_mod .= zeros(nspins)
         m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-        m.H_vals = Array{Float64}(undef, m.n_samples)
+        m.Hj_vals = Array{Float64}(undef, m.n_samples)
 
         samples = zeros(Int64, (m.n_samples, nspins))
         rept_steps = m.n_samples * m.n_coherence ÷ m.n_rept + m.n_equilibrium
@@ -19,14 +19,14 @@
                 s_flip = rand(1:m.nspins)
                 flip!(m, s_flip)
                 if (t > 0) && (t % m.n_coherence == 0)
-                    m.x_mod .= m.x_mod .+ m.s
+                    m.x_mod .= m.x_mod .+ m.sj
                     k = 1
                     for i in 1:nspins-1, j in i+1:nspins
-                        m.xy_mod[k] += m.s[i] * m.s[j]
+                        m.xy_mod[k] += m.sj[i] * m.sj[j]
                         k += 1
                     end
-                    m.H_vals[s] = m.H
-                    samples[s, :] = copy(m.s)
+                    m.Hj_vals[s] = m.Hj
+                    samples[s, :] = copy(m.sj)
                     s += 1
                 end
             end
@@ -51,14 +51,14 @@
         m.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
 
         for p in spin_permutations_iterator(nspins)
-            m.s .= collect(p)
-            m.H = energy(m)
-            Zx = exp(-m.β * m.H)
-            Z += Zx
-            m.x_mod .= m.x_mod .+ Zx .* m.s
+            m.sj .= collect(p)
+            m.Hj = energy(m)
+            Pj = exp(-m.β * m.Hj)
+            Z += Pj
+            m.x_mod .= m.x_mod .+ Pj .* m.sj
             t = 1
             for i in 1:nspins-1, j in i+1:nspins
-                m.xy_mod[t] += m.s[i] * m.s[j] * Zx
+                m.xy_mod[t] += m.sj[i] * m.sj[j] * Pj
                 t += 1
             end
         end
