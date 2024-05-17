@@ -20,7 +20,7 @@ mutable struct MaxEnt
     ones_dist_mod::Vector{Float64}      # model computed P[k spins up]
 
     q::Float64                          # Tsallis q
-    reg::Bool                           # uses or not André's H0 reguralization
+    reg::Bool                           # uses or not André's H0 regularization
     β::Float64                          # inverse temperature used to train the model
     h::Vector{Float64}                  # model local fields
     J::Vector{Float64}                  # model couplings
