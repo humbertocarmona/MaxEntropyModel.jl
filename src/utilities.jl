@@ -89,6 +89,39 @@ function spin_permutations_iterator(n; spin_values=[+1, -1])
     return Base.Iterators.product(fill(spin_values, n)...)
 end
 
+function spin_permutations_iterator2(n; spin_values=[+1, -1])
+    return Base.Iterators.map(x -> [spin_values[bit+1] for bit in x], Base.Iterators.product(fill(0:1, n)...))
+end
+
+function gray_code_iterator(n; spin_values=[+1, -1])
+    # Function to generate the nth Gray code number
+    gray_code(k) = k ⊻ (k >>> 1)
+
+    # Iterator to generate the Gray code sequence
+    return Base.Iterators.map(
+        k -> [spin_values[(gray_code(k)>>>i)&1+1] for i in (n-1):-1:0],
+        0:(2^n-1)
+    )
+end
+#==
+n=1
+m1.sj .= ones(Int,nspins)
+en = energy(m1)
+for s in MaxEntropyModel.gray_code_iterator(nspins)
+	sj = collect(s)
+	i = findfirst(x->x!=0, sj - m1.sj)
+	if ~isnothing(i)
+		en += deltaEnergy(m1,i)
+		m1.sj .= sj
+	end
+	hj = energy(m1)
+	println("$i, $(en), $(hj), $(hj -en)")
+	println(sold, "->", m1.sj)
+	n+=1
+	(n>=5) && break;
+end
+
+==#
 
 function ones_distribution(M::Matrix{<:Number})
     nsamples, N = size(M)

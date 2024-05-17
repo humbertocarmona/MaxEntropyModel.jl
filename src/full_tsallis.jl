@@ -7,18 +7,31 @@ function full_tsallis!(model::MaxEnt)
 	model.x_mod .= zeros(nspins)
 	model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
 	resize!(model.H0_vals, model.n_relax_steps)
-	H0 = compute_energy_shift(model, q)
-	model.H0_vals[model.t] = H0
+	H0 = 0.0
+	if model.reg
+		H0 = compute_energy_shift(model, q)
+		model.H0_vals[model.t] = H0
+	end
+
+	# ---- using deltaEnergy
+	# sj = ones(Int, nspins)
+	# model.sj .= copy(sj)
+	# model.Hj = energy(model)
 
 	j = 1
-	for p in spin_permutations_iterator(nspins)
+	for p in gray_code_iterator(nspins)
 		model.sj .= collect(p)
 		model.Hj = energy(model)
-		if model.reg
-			Pj = exp_q(-model.β * (model.Hj + H0), q)
-		else
-			Pj = exp_q(-model.β * model.Hj, q)
-		end
+		
+		# ---- using deltaEnergy
+		# sj .= collect(p)
+		# i = findfirst(x->x!=0, sj - model.sj)
+		# if ~isnothing(i)
+		# 	model.Hj += deltaEnergy(model,i)
+		# 	model.sj .= sj
+		# end
+
+		Pj = exp_q(-model.β * (model.Hj + H0), q)
 		Zq += Pj
 		model.x_mod .= model.x_mod .+ Pj .* model.sj
 		i = 1

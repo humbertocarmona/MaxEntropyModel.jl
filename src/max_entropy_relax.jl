@@ -1,5 +1,5 @@
 function max_entropy_relax!(model::MaxEnt)
-    mess0 = @sprintf "max_entropy_relax! %s %3.1f" model.run_type model.q
+    mess0 = @sprintf "max_entropy_relax! %s %3.2f" model.run_type model.q
     mess = @sprintf "%s| writing error to %s" mess0 model.err_file
     debug(LOGGER, mess)
     samples = nothing
