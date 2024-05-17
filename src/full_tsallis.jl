@@ -6,7 +6,6 @@ function full_tsallis!(model::MaxEnt)
 	Zq = 0.0
 	model.x_mod .= zeros(nspins)
 	model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
-	resize!(model.H0_vals, model.n_relax_steps)
 	H0 = 0.0
 	if model.reg
 		H0 = compute_energy_shift(model, q)

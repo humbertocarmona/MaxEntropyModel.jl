@@ -10,6 +10,8 @@ function max_entropy_relax!(model::MaxEnt)
         err = 1.0
         t0 = time()
         model.t = 1
+        model.H0_vals = zeros(model.n_relax_steps)
+
         while (model.t <= model.n_relax_steps) && (err > model.tol)
             t0 = time()
             if model.run_type == 'f'

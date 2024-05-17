@@ -287,3 +287,5 @@ end
     σij = sign.(m.J * (1.0 - q))
     return -dot(m.h, σi) - dot(m.J, σij)
 end
+
+typedict(x::T) where {T} = Dict(fn=>getfield(x, fn) for fn ∈ fieldnames(T))

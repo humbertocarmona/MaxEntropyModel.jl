@@ -20,19 +20,27 @@ function write_model(model::MaxEnt, filename::String = "none"; force = false)
 end
 
 function write_model(dic::Dict, filename::String = "none";
-	force = false, only_keys = [])
-	if filename == "none"
+	force = false, only = [], remove_keys=[])
+	if filename == "none" && haskey(dic, :result_file)
 		filename = dic[:result_file]
 	end
+	@assert filename != "none" "must provide a filename or key :result_file"
+
 	filename = isnothing(findfirst(".json", filename)) ? "$(filename).json" : filename
-	if size(only_keys, 1) > 0
-		push!(only_keys, :model)
-		push!(only_keys, :nspins)
-		for k in keys(dict)
-			if ~(k in only_keys)
+	if size(only, 1) > 0
+		push!(only, :runid)
+		push!(only, :model)
+		push!(only, :nspins)
+		println(only)
+		for k in keys(dic)
+			println(k)
+			if ~(k in only)
 				delete!(dic, k)
 			end
 		end
+	end
+	for k in remove_keys
+		delete!(dic, k)
 	end
 
 	proceed = true
@@ -59,8 +67,7 @@ function read_model(filename::String)
 	@assert obj.model == "MaxEnt"
 
 	nspins = obj.nspins
-	model = MaxEnt()
-
+	model = MaxEnt(nspins)
 
 	haskey(obj, "runid") && (model.runid = obj.runid)
 	haskey(obj, "nspins") && (model.nspins = obj.nspins)
@@ -172,6 +179,7 @@ function set_model!(model::MaxEnt, dic::Dict)
 	end
 	haskey(dic, :init_file) && (model.init_file = dic[:init_file])
 	haskey(dic, :result_file) && (model.result_file = dic[:result_file])
+	println(model.result_file)
 	haskey(dic, :err_file) && (model.err_file = dic[:err_file])
 	haskey(dic, :comment) && (model.comment = dic[:comment])
 	haskey(dic, :date_today) && (model.date_today = dic[:date_today])
@@ -216,54 +224,3 @@ function set_model!(input_file::String)
 end
 
 
-function to_dict(model::MaxEnt)
-	dic = Dict(
-		:model => model.model,
-		:runid => model.runid, :nspins => model.nspins,
-		:sj => model.sj,
-		:Hj => model.Hj,
-		:S_obs => model.S_obs, :x_obs => model.x_obs,
-		:xy_obs => model.xy_obs,
-		:xyz_obs => model.xyz_obs,
-		:pearson_obs => model.pearson_obs,
-		:ones_dist_obs => model.ones_dist_obs, :x_mod => model.x_mod,
-		:xy_mod => model.xy_mod,
-		:xyz_mod => model.xyz_mod,
-		:pearson_mod => model.pearson_mod,
-		:ones_dist_mod => model.ones_dist_mod, :q => model.q,
-		:reg => model.reg,
-		:β => model.β,
-		:h => model.h,
-		:J => model.J, :Hj_vals => model.Hj_vals,
-		:H0_vals => model.H0_vals,
-		:Pj_vals => model.Pj_vals,
-		:H_mean => model.H_mean,
-		:M_mean => model.M_mean,
-		:CV => model.CV,
-
-		# Random Laser specific params
-		:run_type => model.run_type,
-		:init_file => model.init_file,
-		:result_file => model.result_file,
-		:err_file => model.err_file,
-		:comment => model.comment,
-		:date_today => model.date_today,
-		:λwindow => model.λwindow,
-		:n_relax_steps => model.n_relax_steps,
-		:ηh => model.ηh,
-		:ηJ => model.ηJ,
-		:γh => model.γh,
-		:γJ => model.γJ,
-		:α => model.α,
-		:Δx => model.Δx,
-		:Δxy => model.Δxy, :tol => model.tol,
-		:n_samples => model.n_samples,
-		:n_equilibrium => model.n_equilibrium,
-		:n_coherence => model.n_coherence,
-		:n_rept => model.n_rept,
-		:mc_seed => model.mc_seed,
-		:t => model.t,
-		:bond => model.bond,
-	)
-	return dic
-end
