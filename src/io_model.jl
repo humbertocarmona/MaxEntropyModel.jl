@@ -31,14 +31,14 @@ function write_model(dic::Dict, filename::String = "none";
 		push!(only, :runid)
 		push!(only, :model)
 		push!(only, :nspins)
-		println(only)
 		for k in keys(dic)
-			println(k)
 			if ~(k in only)
 				delete!(dic, k)
 			end
 		end
 	end
+	push!(remove_keys,:Δx)
+	push!(remove_keys,:Δy)
 	for k in remove_keys
 		delete!(dic, k)
 	end
@@ -63,11 +63,10 @@ function read_model(filename::String)
 	obj = JSON3.read(filename)
 	@assert haskey(obj, "model") "$filename must have the \"model\" key"
 	@assert haskey(obj, "nspins") "$filename must have the \"nspins\" key"
-	@assert haskey(obj, "S_obs") "$filename must have the \"S_obs\" key"
 	@assert obj.model == "MaxEnt"
 
 	nspins = obj.nspins
-	model = MaxEnt(nspins)
+	model = MaxEnt("teste", nspins,'f')
 
 	haskey(obj, "runid") && (model.runid = obj.runid)
 	haskey(obj, "nspins") && (model.nspins = obj.nspins)
@@ -179,7 +178,6 @@ function set_model!(model::MaxEnt, dic::Dict)
 	end
 	haskey(dic, :init_file) && (model.init_file = dic[:init_file])
 	haskey(dic, :result_file) && (model.result_file = dic[:result_file])
-	println(model.result_file)
 	haskey(dic, :err_file) && (model.err_file = dic[:err_file])
 	haskey(dic, :comment) && (model.comment = dic[:comment])
 	haskey(dic, :date_today) && (model.date_today = dic[:date_today])
@@ -217,10 +215,13 @@ function set_model!(input_file::String)
 	@assert haskey(obj, "model") "$filename must have the \"model\" key"
 	@assert haskey(obj, "nspins") "$filename must have the \"nspins\" key"
 	@assert obj.model == "MaxEnt"
-
+	model = MaxEnt("teste", obj["nspins"],'f')
 	set_model!(model, Dict(obj))
 
-	return nothing
+	return model
 end
 
+@inline function typedict(x::T) where {T} 
+	return  Dict(fn=>getfield(x, fn) for fn ∈ fieldnames(T))
+end
 

@@ -1,4 +1,11 @@
-function full_tsallis!(model::MaxEnt)
+
+"""
+	full_q_iteration!(model::MaxEnt)
+
+	this uses exp_q, that returns exp if q==1
+
+"""
+function full_q_iteration!(model::MaxEnt)
 	nspins = model.nspins
 	@assert nspins < 25 "maximum full ensemble system is 24, found $nspins"
 
@@ -34,8 +41,8 @@ function full_tsallis!(model::MaxEnt)
 		Zq += Pj
 		model.x_mod .= model.x_mod .+ Pj .* model.sj
 		i = 1
-		for k in 1:nspins-1
-			for l in k+1:nspins
+		@simd for k in 1:nspins-1
+			@simd for l in k+1:nspins
 				@inbounds model.xy_mod[i] += model.sj[k] * model.sj[l] * Pj
 				i += 1
 			end
@@ -53,7 +60,12 @@ function full_tsallis!(model::MaxEnt)
 	return nothing
 end
 
-function full_tsallis_measurements!(model::MaxEnt)
+"""
+    full_measurements!(model::MaxEnt)
+
+TBW
+"""
+function full_q_measurements!(model::MaxEnt)
 	nspins = model.nspins
 	@assert nspins < 25 "maximum full ensemble system is 24, found $nspins"
 

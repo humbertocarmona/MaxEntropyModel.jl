@@ -45,8 +45,8 @@ export MaxEnt,
 	set_model!,
 	full_iteration!,
 	full_measurements!,
-	full_tsallis!,
-	full_tsallis_measurements!,
+	full_q_iteration!,
+	full_q_measurements!,
 	metropolis_iteration!,
 	metropolis_measurements!,
 	max_entropy_relax!,
@@ -56,5 +56,5 @@ export MaxEnt,
 	energy,
 	deltaEnergy, exp_q, ln_q,
 	gray_code_iterator,
-	to_dict
+	typedict
 end

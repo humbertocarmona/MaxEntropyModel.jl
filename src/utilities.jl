@@ -77,13 +77,7 @@ end
 
 	The function creates an iterator that generates all possible spin permutations of length `n` by combining the specified spin values.
 
-	# Examples
-	```julia
-		iterator = spin_permutations_iterator(3)
-		for spin_permutation in iterator
-			println(spin_permutation)
-		end
-	```
+
 """
 function spin_permutations_iterator(n; spin_values=[+1, -1])
     return Base.Iterators.product(fill(spin_values, n)...)
@@ -288,4 +282,3 @@ end
     return -dot(m.h, σi) - dot(m.J, σij)
 end
 
-typedict(x::T) where {T} = Dict(fn=>getfield(x, fn) for fn ∈ fieldnames(T))
