@@ -1,10 +1,10 @@
 mutable struct MaxEnt
     model::String
-    runid::String
+    runid::String                      
 
     nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
-    sj::Vector{Int64}                    # store nodes states size(N), usually +1 and -1 
-    Hj::Float64                          # system energy corresponding to state s
+    sj::Vector{Int64}                   # store nodes states size(N), usually +1 and -1 
+    Hj::Float64                         # system energy corresponding to state s
     S_obs::Matrix{<:Number}             # the experimental binary matrix
 
     x_obs::Vector{Float64}              # observed E[ si ]
@@ -141,24 +141,23 @@ mutable struct MaxEnt
 
         return model
     end
-    
 
     function MaxEnt(m::MaxEnt, runid="test", run_type='f')
         nspins = m.nspins
-        model = MaxEnt(runid,nspins, run_type)
+        model = MaxEnt(runid, nspins, run_type)
         model.runid = runid
-        
+
         model.run_type = run_type
         model.x_obs = copy(m.x_mod)
         model.xy_obs = copy(m.xy_mod)
         model.pearson_obs = copy(m.pearson_mod)
         model.xyz_obs = copy(m.xyz_mod)
         model.ones_dist_obs = copy(m.ones_dist_mod)
-        
+
         return model
     end
 
-    function MaxEnt(runid="teste", nspins=20, run_type='f'; nsamples=10)
+    function MaxEnt(runid="teste", nspins=20, run_type='f', nsamples=10)
         S = map(x -> x < 0.5 ? -1 : 1, rand(nsamples, nspins))
         return MaxEnt(S, runid, run_type)
     end

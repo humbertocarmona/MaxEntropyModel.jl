@@ -87,9 +87,9 @@ function spin_permutations_iterator2(n; spin_values=[+1, -1])
     return Base.Iterators.map(x -> [spin_values[bit+1] for bit in x], Base.Iterators.product(fill(0:1, n)...))
 end
 
-function gray_code_iterator(n; spin_values=[+1, -1])
+function gray_code_iterator(n, spin_values=[+1, -1])
     # Function to generate the nth Gray code number
-    gray_code(k) = k ⊻ (k >>> 1)
+    gray_code(k) = k ⊻ (k >>> 1) # xor(k, k>>>1) # >>> is a logical shift 
 
     # Iterator to generate the Gray code sequence
     return Base.Iterators.map(
