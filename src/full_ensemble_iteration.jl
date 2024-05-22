@@ -7,17 +7,20 @@ function full_iteration!(model::MaxEnt)
     model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
     j = 1
     s = zeros(Int, nspins)
+    ps = zeros(Float64, nspins)
+
     for p in spin_permutations_iterator(nspins)
         s .= collect(p)
         Hj = energy(model, s)
         Pj = exp(-model.β * Hj)
+        ps .= Pj*s
         Z += Pj
 
-        model.x_mod .= model.x_mod .+ Pj .* s
+        model.x_mod .= model.x_mod .+ ps
         i = 1
         for k in 1:nspins-1
             for l in k+1:nspins
-                @inbounds model.xy_mod[i] += s[k] * s[l] * Pj
+                @inbounds model.xy_mod[i] += s[k] * ps[l]
                 i += 1
             end
         end
@@ -48,16 +51,20 @@ function full_measurements!(model::MaxEnt)
 
     j = 1
     s = zeros(Int, nspins)
+    ps = zeros(Float64, nspins)
+
     for p in spin_permutations_iterator(nspins)
         s .= collect(p)
         Hj = energy(model,s)
         Pj = exp(-model.β * Hj)
+        ps .= Pj*s
+
         Z += Pj
 
-        model.x_mod .= model.x_mod .+ Pj .* s
+        model.x_mod .= model.x_mod .+ ps
         i = 1
         for k in 1:nspins-1, l in k+1:nspins
-            model.xy_mod[i] += s[k] * s[l] * Pj
+            model.xy_mod[i] += s[k] * ps[l]
             i += 1
         end
 
@@ -68,7 +75,7 @@ function full_measurements!(model::MaxEnt)
         for k in 1:nspins-2
             for l in k+1:nspins-1
                 for m in l+1:nspins
-                    model.xyz_mod[i] += s[k] * s[l] * s[m] * Pj
+                    model.xyz_mod[i] += s[k] * s[l] * ps[m]
                     i += 1
                 end
             end

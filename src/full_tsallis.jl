@@ -10,8 +10,10 @@ function full_q_iteration!(model::MaxEnt)
 
 	q = model.q
 	Zq = 0.0
+
 	model.x_mod .= zeros(nspins)
 	model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
+	
 	H0 = 0.0
 	if model.reg
 		H0 = compute_energy_shift(model, q)
@@ -21,7 +23,6 @@ function full_q_iteration!(model::MaxEnt)
 	j = 1
 	s = zeros(Int, nspins)
 	ps = zeros(Float64, nspins)
-
 	for p in gray_code_iterator(nspins)
 		s .= collect(p)
 		Hj = energy(model, s)
@@ -77,17 +78,20 @@ function full_q_measurements!(model::MaxEnt)
 	end
 	j = 1
 	s = zeros(Int, nspins)
+	ps = zeros(Float64, nspins)
+
 	for p in spin_permutations_iterator(nspins)
 		s .= collect(p)
 		Hj = energy(model, s)
 		Pj = exp_q(-model.β * (Hj + H0), q)
 		Zq += Pj
+		ps .= Pj*s
 
-		model.x_mod .= model.x_mod .+ Pj .* s
+		model.x_mod .= model.x_mod .+ ps
 		i = 1
 		for k in 1:nspins-1
 			for l in k+1:nspins
-				model.xy_mod[i] += s[k] * s[l] * Pj
+				model.xy_mod[i] += s[k] * ps[l]
 				i += 1
 			end
 		end
@@ -99,7 +103,7 @@ function full_q_measurements!(model::MaxEnt)
 		for k in 1:nspins-2
 			for l in k+1:nspins-1
 				for m in l+1:nspins
-					model.xyz_mod[i] += s[k] * s[l] * s[m] * Pj
+					model.xyz_mod[i] += s[k] * s[l] * ps[m]
 					i += 1
 				end
 			end
