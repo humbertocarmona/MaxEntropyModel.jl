@@ -3,21 +3,20 @@ mutable struct MaxEnt
     runid::String                      
 
     nspins::Int64                       # number of nodes, "spins", σ≡{σ1, σ2, ... σN} 
-    sj::Vector{Int64}                   # store nodes states size(N), usually +1 and -1 
-    Hj::Float64                         # system energy corresponding to state s
-    S_obs::Matrix{<:Number}             # the experimental binary matrix
+
 
     x_obs::Vector{Float64}              # observed E[ si ]
     xy_obs::Vector{Float64}             # observed E[ si⋅sj ]
     xyz_obs::Vector{Float64}            # observed E[ si⋅sj⋅sk ]
-    pearson_obs::Vector{Float64}        # store observed Pearson correlation coefficient 
     ones_dist_obs::Vector{Float64}      # observed P[k spins up]
 
     x_mod::Vector{Float64}              # model computed E[si]
     xy_mod::Vector{Float64}             # model computed E[si⋅sj]
     xyz_mod::Vector{Float64}            # model computed E[si⋅sj⋅sk]
-    pearson_mod::Vector{Float64}        # store model Pearson correlation coefficient 
     ones_dist_mod::Vector{Float64}      # model computed P[k spins up]
+
+    # pearson_obs::Vector{Float64}        # store observed Pearson correlation coefficient 
+    # pearson_mod::Vector{Float64}        # store model Pearson correlation coefficient 
 
     q::Float64                          # Tsallis q
     reg::Bool                           # uses or not André's H0 regularization
@@ -29,8 +28,8 @@ mutable struct MaxEnt
     H0_vals::Vector{Float64}            # store H0 values (Andre's correction) for each parameter set
     Pj_vals::Vector{Float64}            # store all probabilities Pj for state sj
     H_mean::Float64                     # mean system energy
-    M_mean::Float64                         # system magnetization mean
-    CV::Float64              # system specific heat  β^-2 <H^2> - <H>^2
+    M_mean::Float64                     # system magnetization mean
+    CV::Float64                         # system specific heat  β^-2 <H^2> - <H>^2
 
     # Random Laser specific parameters
     run_type::Char
@@ -67,14 +66,13 @@ mutable struct MaxEnt
 
         model.runid = runid
         model.nspins = nspins
-        model.sj = map(x -> x < 0.5 ? 1 : -1, rand(nspins))   # random initial state
-        model.S_obs = copy(S)
+
 
         model.x_obs = mean_1st_order_moments(S)
         # model.x_obs = map_to_unit_interval.(model.x_obs, -1.0, 1.0)
 
         model.xy_obs = mean_2nd_order_moments(S)
-        model.pearson_obs = straighten(cor(S))
+        # model.pearson_obs = straighten(cor(S))
         model.xyz_obs = mean_3rd_order_moments(S)
         _, model.ones_dist_obs = ones_distribution(S)
 
@@ -84,7 +82,7 @@ mutable struct MaxEnt
 
         model.x_mod = zeros(size(model.x_obs))
         model.xy_mod = zeros(size(model.xy_obs))
-        model.pearson_mod = zeros(size(model.pearson_obs))
+        # model.pearson_mod = zeros(size(model.pearson_obs))
         model.xyz_mod = zeros(size(model.xyz_obs))
         model.ones_dist_mod = zeros(size(model.ones_dist_obs))
 
@@ -126,7 +124,6 @@ mutable struct MaxEnt
         model.err_file = "err.csv"
 
         model.bond = make_bonds(nspins)
-        model.Hj = energy(model)
         model.t = 1
         model.q = 1.0
         model.reg = false
@@ -150,7 +147,7 @@ mutable struct MaxEnt
         model.run_type = run_type
         model.x_obs = copy(m.x_mod)
         model.xy_obs = copy(m.xy_mod)
-        model.pearson_obs = copy(m.pearson_mod)
+        # model.pearson_obs = copy(m.pearson_mod)
         model.xyz_obs = copy(m.xyz_mod)
         model.ones_dist_obs = copy(m.ones_dist_mod)
 

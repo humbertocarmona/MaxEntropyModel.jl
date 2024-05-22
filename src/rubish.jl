@@ -35,7 +35,7 @@
         m.x_mod ./= m.n_samples
         m.xy_mod ./= m.n_samples
 
-        pearson_mod!(m)
+        # pearson_mod!(m)
 
         return samples
     end
@@ -65,7 +65,7 @@
         m.x_mod ./= Z
         m.xy_mod ./= Z
 
-        pearson_mod!(m)
+        # pearson_mod!(m)
 
         return nothing
     end

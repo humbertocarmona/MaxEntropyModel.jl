@@ -1,42 +1,28 @@
-function energy(m::MaxEnt)
+function energy(m::MaxEnt, s::Vector{Int})
+	H = -dot(m.h, s)
 
-    H = -dot(m.h, m.sj)
+	t = 1
+	@inbounds for j in 1:m.nspins-1
+		for i in j+1:m.nspins
+			H -= s[i] * m.J[t] * s[j]
+			t += 1
+		end
+	end
 
-    t = 1
-    for j in 1:m.nspins-1
-        for i in j+1:m.nspins
-            @inbounds H -= m.sj[i] * m.J[t] * m.sj[j]
-            t += 1
-        end
-    end
-
-    return H
+	return H
 end
 
-
-# function deltaEnergy(m::MaxEnt, i::Int64)
-#     ΔH = 2 * m.sj[i] * m.h[i]
-
-#     for j in 1:m.nspins
-#         if j != i
-#             t = m.bond[i, j]
-#             ΔH += 2.0 * m.sj[i] * m.J[t] * m.sj[j]
-#         end
-#     end
-
-#     return ΔH
-# end
-
 # should always prefer to loop vertically in Julia
-function deltaEnergy(m::MaxEnt, j::Int64)
-    ΔH = 2 * m.sj[j] * m.h[j]
+# TODO: checar essa soma!!!!
+function deltaEnergy(m::MaxEnt, s::Vector{Int}, j::Int64)
+	ΔH = 2 * s[j] * m.h[j]
 
-    for i in 1:m.nspins
-        if i != j
-            t = m.bond[i, j]
-            ΔH += 2.0 * m.sj[j] * m.J[t] * m.sj[j]
-        end
-    end
+	for i in 1:m.nspins
+		if i != j
+			t = m.bond[i, j]
+			ΔH += 2.0 * s[i] * m.J[t] * s[j] 
+		end
+	end
 
-    return ΔH
+	return ΔH
 end

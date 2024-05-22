@@ -3,7 +3,6 @@
 	full_q_iteration!(model::MaxEnt)
 
 	this uses exp_q, that returns exp if q==1
-
 """
 function full_q_iteration!(model::MaxEnt)
 	nspins = model.nspins
@@ -19,36 +18,29 @@ function full_q_iteration!(model::MaxEnt)
 		model.H0_vals[model.t] = H0
 	end
 
-	# ---- using deltaEnergy
-	# sj = ones(Int, nspins)
-	# model.sj .= copy(sj)
-	# model.Hj = energy(model)
-
 	j = 1
-	for p in gray_code_iterator(nspins)
-		model.sj .= collect(p)
-		model.Hj = energy(model)
-		
-		# ---- using deltaEnergy
-		# sj .= collect(p)
-		# i = findfirst(x->x!=0, sj - model.sj)
-		# if ~isnothing(i)
-		# 	model.Hj += deltaEnergy(model,i)
-		# 	model.sj .= sj
-		# end
+	s = zeros(Int, nspins)
+	ps = zeros(Float64, nspins)
 
-		Pj = exp_q(-model.β * (model.Hj + H0), q)
+	for p in gray_code_iterator(nspins)
+		s .= collect(p)
+		Hj = energy(model, s)
+
+		Pj = exp_q(-model.β * (Hj + H0), q)
+		ps .= Pj * s
 		Zq += Pj
-		model.x_mod .= model.x_mod .+ Pj .* model.sj
+		@inbounds for i in eachindex(s)
+			model.x_mod[i] = model.x_mod[i] + ps[i]
+		end
 		i = 1
-		@simd for k in 1:nspins-1
-			@simd for l in k+1:nspins
-				@inbounds model.xy_mod[i] += model.sj[k] * model.sj[l] * Pj
+		@inbounds for k in 1:nspins-1
+			for l in k+1:nspins
+				model.xy_mod[i] += s[k] * ps[l]
 				i += 1
 			end
 		end
 
-		model.Hj_vals[j] = model.Hj
+		model.Hj_vals[j] = Hj
 		model.Pj_vals[j] = Pj
 		j += 1
 	end
@@ -61,9 +53,7 @@ function full_q_iteration!(model::MaxEnt)
 end
 
 """
-    full_measurements!(model::MaxEnt)
-
-TBW
+	full_measurements!(model::MaxEnt)
 """
 function full_q_measurements!(model::MaxEnt)
 	nspins = model.nspins
@@ -80,42 +70,44 @@ function full_q_measurements!(model::MaxEnt)
 	model.xyz_mod .= zeros(nspins * (nspins - 1) * (nspins - 2) ÷ 6)
 	model.ones_dist_mod .= zeros(nspins + 1)
 
-	H0 = compute_energy_shift(model, q)
-	model.H0_vals[1] = H0
+	H0 = 0.0
+	if model.reg
+		H0 = compute_energy_shift(model, q)
+		model.H0_vals[model.t] = H0
+	end
 	j = 1
-	for s in spin_permutations_iterator(nspins)
-		model.sj .= collect(s)
-		model.Hj = energy(model)
-		if model.reg
-			Pj = exp_q(-model.β * (model.Hj + H0), q)
-		else
-			Pj = exp_q(-model.β * model.Hj, q)
-		end
+	s = zeros(Int, nspins)
+	for p in spin_permutations_iterator(nspins)
+		s .= collect(p)
+		Hj = energy(model, s)
+		Pj = exp_q(-model.β * (Hj + H0), q)
 		Zq += Pj
 
-		model.x_mod .= model.x_mod .+ Pj .* model.sj
+		model.x_mod .= model.x_mod .+ Pj .* s
 		i = 1
-		for k in 1:nspins-1, l in k+1:nspins
-			model.xy_mod[i] += model.sj[k] * model.sj[l] * Pj
-			i += 1
+		for k in 1:nspins-1
+			for l in k+1:nspins
+				model.xy_mod[i] += s[k] * s[l] * Pj
+				i += 1
+			end
 		end
 
-		model.H_mean += model.Hj * Pj
-		H2_mean += model.Hj * model.Hj * Pj
-		model.M_mean += sum(model.sj) * Pj
+		model.H_mean += Hj * Pj
+		H2_mean += Hj * Hj * Pj
+		model.M_mean += sum(s) * Pj
 		i = 1
 		for k in 1:nspins-2
 			for l in k+1:nspins-1
 				for m in l+1:nspins
-					model.xyz_mod[i] += model.sj[k] * model.sj[l] * model.sj[m] * Pj
+					model.xyz_mod[i] += s[k] * s[l] * s[m] * Pj
 					i += 1
 				end
 			end
 		end
-		k = count(isone.(model.sj))
+		k = count(isone.(s))
 		model.ones_dist_mod[k+1] += Pj
 
-		model.Hj_vals[j] = model.Hj
+		model.Hj_vals[j] = Hj
 		model.Pj_vals[j] = Pj
 		j += 1
 	end
@@ -129,6 +121,6 @@ function full_q_measurements!(model::MaxEnt)
 	model.Pj_vals ./= Zq
 	model.ones_dist_mod ./= sum(model.ones_dist_mod)
 
-	pearson_mod!(model)
+	# pearson_mod!(model)
 	return nothing
 end
