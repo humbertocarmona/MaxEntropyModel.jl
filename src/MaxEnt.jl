@@ -145,21 +145,14 @@ mutable struct MaxEnt
 	"""
 	MaxEnt(m::MaxEnt, runid = "test", run_type = 'f')
 
-	- creates a model from another model m
-	- this model observable are m computed parameters
+	- just copy m and change runid and run_type
 
 	"""
 	function MaxEnt(m::MaxEnt, runid = "test", run_type = 'f')
 		nspins = m.nspins
-		model = MaxEnt(runid, nspins, run_type)
+		model = copy(m)
 		model.runid = runid
-
 		model.run_type = run_type
-		model.x_obs = copy(m.x_mod)
-		model.xy_obs = copy(m.xy_mod)
-		# model.pearson_obs = copy(m.pearson_mod)
-		model.xyz_obs = copy(m.xyz_mod)
-		model.ones_dist_obs = copy(m.ones_dist_mod)
 
 		return model
 	end
@@ -174,4 +167,44 @@ mutable struct MaxEnt
 		S = map(x -> x < 0.5 ? -1 : 1, rand(nsamples, nspins))
 		return MaxEnt(S, runid, run_type)
 	end
+end
+
+function Base.copy(m::MaxEnt)
+	model = MaxEnt(m.runid, m.nspins, m.run_type, 10)
+	model.q = m.q
+	model.reg = m.reg
+	model.β = m.β
+	model.h = copy(m.h)
+	model.J = copy(m.J)
+	model.Hj_vals = copy(m.Hj_vals)
+	model.H0_vals = copy(m.H0_vals)
+	model.Pj_vals = copy(m.Pj_vals)
+	model.H_mean = m.H_mean
+	model.M_mean = m.M_mean
+	model.CV = m.CV
+	model.run_type = m.run_type
+	model.init_file = m.init_file
+	model.result_file = m.result_file
+	model.err_file = m.err_file
+	model.comment = m.comment
+	model.date_today = m.date_today
+	model.λwindow = m.λwindow
+	model.n_relax_steps = m.n_relax_steps
+	model.ηh = m.ηh
+	model.ηJ = m.ηJ
+	model.γh = m.γh
+	model.γJ = m.γJ
+	model.α = m.α
+	model.Δx = copy(m.Δx)
+	model.Δxy = copy(m.Δxy)
+	model.tol = m.tol
+	model.n_samples = m.n_samples
+	model.n_equilibrium = m.n_equilibrium
+	model.n_coherence = m.n_coherence
+	model.n_rept = m.n_rept
+	model.mc_seed = m.mc_seed
+	model.bond = copy(m.bond)
+	model.t = m.t
+
+	return model
 end
