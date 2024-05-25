@@ -47,7 +47,8 @@ mutable struct MaxEnt
 	Δx::Vector{Float64}     # ..
 	Δxy::Vector{Float64}    # ..
 
-	tol::Float64
+	tol_x::Float64
+	tol_xy::Float64
 	n_samples::Int64
 	n_equilibrium::Int64
 	n_coherence::Int64
@@ -114,7 +115,8 @@ mutable struct MaxEnt
 		model.Δx = zeros(size(model.x_obs))
 		model.Δxy = zeros(size(model.xy_obs))
 		model.n_relax_steps = 50
-		model.tol = 1.0e-6
+		model.tol_x = 1.0e-5
+		model.tol_xy = 1.0e-6
 
 		model.H0_vals = zeros(Float64, model.n_relax_steps)
 
@@ -197,7 +199,8 @@ function Base.copy(m::MaxEnt)
 	model.α = m.α
 	model.Δx = copy(m.Δx)
 	model.Δxy = copy(m.Δxy)
-	model.tol = m.tol
+	model.tol_x = m.tol_x
+	model.tol_xy = m.tol_xy
 	model.n_samples = m.n_samples
 	model.n_equilibrium = m.n_equilibrium
 	model.n_coherence = m.n_coherence

@@ -115,7 +115,8 @@ function set_model!(model::MaxEnt, dic::Dict)
     # Δx::Vector{Float64}     no need
     # Δxy::Vector{Float64}    no need
 
-    haskey(dic, :tol) && (model.tol = dic[:tol])
+    haskey(dic, :tol_x) && (model.tol_x = dic[:tol_x])
+    haskey(dic, :tol_xy) && (model.tol_xy = dic[:tol_xy])
     haskey(dic, :n_samples) && (model.n_samples = dic[:n_samples])
     haskey(dic, :n_equilibrium) && (model.n_equilibrium = dic[:n_equilibrium])
     haskey(dic, :n_coherence) && (model.n_coherence = dic[:n_coherence])
