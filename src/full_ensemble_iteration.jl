@@ -1,26 +1,30 @@
 function full_iteration!(model::MaxEnt)
     nspins = model.nspins
-    @assert nspins < 25 "maximum full enesemble system is 24, found $nspins"
+    @assert nspins < 25 "maximum full ensemble system is 24, found $nspins"
 
     Z = 0.0
     model.x_mod .= zeros(nspins)
     model.xy_mod .= zeros(Float64, nspins * (nspins - 1) ÷ 2)
     j = 1
+    s = zeros(Int, nspins)
+    ps = zeros(Float64, nspins)
+
     for p in spin_permutations_iterator(nspins)
-        model.sj .= collect(p)
-        model.Hj = energy(model)
-        Pj = exp(-model.β * model.Hj)
+        s .= collect(p)
+        Hj = energy(model, s)
+        Pj = exp(-model.β * Hj)
+        ps .= Pj*s
         Z += Pj
 
-        model.x_mod .= model.x_mod .+ Pj .* model.sj
+        model.x_mod .= model.x_mod .+ ps
         i = 1
         for k in 1:nspins-1
             for l in k+1:nspins
-                @inbounds model.xy_mod[i] += model.sj[k] * model.sj[l] * Pj
+                @inbounds model.xy_mod[i] += s[k] * ps[l]
                 i += 1
             end
         end
-        model.Hj_vals[j] = model.Hj
+        model.Hj_vals[j] = Hj
         model.Pj_vals[j] = Pj
         j += 1
     end
@@ -32,7 +36,7 @@ end
 
 function full_measurements!(model::MaxEnt)
     nspins = model.nspins
-    @assert nspins < 25 "maximum full enesemble system is 24, found $nspins"
+    @assert nspins < 25 "maximum full ensemble system is 24, found $nspins"
 
     Z = 0.0
     model.x_mod .= zeros(nspins)
@@ -46,35 +50,40 @@ function full_measurements!(model::MaxEnt)
     model.ones_dist_mod .= zeros(nspins + 1)
 
     j = 1
-    for s in spin_permutations_iterator(nspins)
-        model.sj .= collect(s)
-        model.Hj = energy(model)
-        Pj = exp(-model.β * model.Hj)
+    s = zeros(Int, nspins)
+    ps = zeros(Float64, nspins)
+
+    for p in spin_permutations_iterator(nspins)
+        s .= collect(p)
+        Hj = energy(model,s)
+        Pj = exp(-model.β * Hj)
+        ps .= Pj*s
+
         Z += Pj
 
-        model.x_mod .= model.x_mod .+ Pj .* model.sj
+        model.x_mod .= model.x_mod .+ ps
         i = 1
         for k in 1:nspins-1, l in k+1:nspins
-            model.xy_mod[i] += model.sj[k] * model.sj[l] * Pj
+            model.xy_mod[i] += s[k] * ps[l]
             i += 1
         end
 
-        model.H_mean += model.Hj * Pj
-        H2_mean += model.Hj * model.Hj * Pj
-        model.M_mean += sum(model.sj) * Pj
+        model.H_mean += Hj * Pj
+        H2_mean += Hj * Hj * Pj
+        model.M_mean += sum(s) * Pj
         i = 1
         for k in 1:nspins-2
             for l in k+1:nspins-1
                 for m in l+1:nspins
-                    model.xyz_mod[i] += model.sj[k] * model.sj[l] * model.sj[m] * Pj
+                    model.xyz_mod[i] += s[k] * s[l] * ps[m]
                     i += 1
                 end
             end
         end
-        k = count(isone.(model.sj))
+        k = count(isone.(s))
         model.ones_dist_mod[k+1] += Pj
 
-        model.Hj_vals[j] = model.Hj
+        model.Hj_vals[j] = Hj
         model.Pj_vals[j] = Pj
         j += 1
     end
@@ -88,7 +97,7 @@ function full_measurements!(model::MaxEnt)
     model.xyz_mod ./= Z
     model.ones_dist_mod ./= sum(model.ones_dist_mod)
 
-    pearson_mod!(model)
+    # pearson_mod!(model)
     return nothing
 end
 

@@ -57,6 +57,5 @@ export MaxEnt,
     centered_moments_mod,
     energy,
     deltaEnergy, exp_q, ln_q,
-    gray_code_iterator,
-    typedict
+    gray_code_iterator
 end

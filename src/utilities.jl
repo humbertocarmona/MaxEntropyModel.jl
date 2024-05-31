@@ -247,14 +247,15 @@ function centered_moments_mod(m::MaxEnt)
 
 end
 
+#=
 function pearson_mod!(m::MaxEnt)
 
     m.pearson_mod = zeros(size(m.xy_mod))
     s = sqrt.(1.0 .- m.x_mod .^ 2)
 
     t = 1
-    for i in 1:m.nspins-1
-        for j in i+1:m.nspins
+    for j in 1:m.nspins-1
+        for i in j+1:m.nspins
             m.pearson_mod[t] = (m.xy_mod[t] - m.x_mod[i] * m.x_mod[j]) / (s[i] * s[j])
             t += 1
         end
@@ -262,12 +263,12 @@ function pearson_mod!(m::MaxEnt)
 
     return nothing
 end
-
+=#
 
 @inline function exp_q(x::Float64, q::Float64)
     (q == 1.0) && (return exp(x))
     y = (1 + (1 - q) * x)
-    (y < 0.0) && (return 0.0)
+    (y <= 0.0) && (return 0.0)
     return y^(1.0 / (1.0 - q))
 end
 
