@@ -6,7 +6,7 @@ function updated_parameters!(m::MaxEnt)
     Δx = nh * (m.x_obs .- m.x_mod)
     Δxy = nJ * (m.xy_obs .- m.xy_mod)
 
-    m.h .+= Δx + m.α * m.Δx
+    m.h .+= Δx  + m.α * m.Δx
     m.J .+= Δxy + m.α * m.Δxy
 
     m.Δxy = copy(Δxy)
