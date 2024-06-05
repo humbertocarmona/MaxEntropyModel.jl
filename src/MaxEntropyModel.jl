@@ -2,6 +2,7 @@ module MaxEntropyModel
 
 using Memento
 using Printf
+using LaTeXStrings
 using Graphs
 using Statistics
 using StatsBase: rmsd, Histogram, fit
@@ -10,6 +11,7 @@ using Random
 using Distributions
 using JSON3
 using Dates
+using Makie
 using BSON
 
 
@@ -45,6 +47,7 @@ include("metropolis_iteration.jl")
 include("update_model.jl")
 include("max_entropy_relax.jl")
 include("full_tsallis.jl")
+include("plot_model_performance.jl")
 
 export MaxEnt,
     init_parameters!,
@@ -63,5 +66,6 @@ export MaxEnt,
     centered_moments_mod,
     energy,
     deltaEnergy, exp_q, ln_q,
-    gray_code_iterator
+    gray_code_iterator,
+    plot_model_performance
 end
