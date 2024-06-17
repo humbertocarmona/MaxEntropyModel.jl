@@ -175,6 +175,12 @@ function map_to_unit_interval(x, xmin, xmax)
     return clamp(y, -1, 1)
 end
 
+
+"""
+    centered_moments_obs(m::MaxEnt)
+
+    return covariance, pearson, triplets
+"""
 function centered_moments_obs(m::MaxEnt)
 
     covariance = zeros(size(m.xy_obs))
@@ -211,6 +217,11 @@ function centered_moments_obs(m::MaxEnt)
 
 end
 
+"""
+    centered_moments_mod(m::MaxEnt)
+
+    return covariance, pearson, triplets
+"""
 function centered_moments_mod(m::MaxEnt)
 
     covariance = zeros(size(m.xy_mod))
