@@ -25,6 +25,8 @@ function plot_model_performance(m::MaxEnt)
 	ax3 = Axis(fig[1, 3],
 		xlabel = L"T_{ijk}^{obs}",
 		ylabel = L"T_{ijk}^{Model}",
+		xtickformat = values -> [@sprintf "%.0f" val * 10000 for val in values],
+        ytickformat = values -> [@sprintf "%.0f" val * 10000 for val in values],
 		xlabelsize = 30, ylabelsize = 30,
 		aspect = 1, spinewidth = 2)
 
@@ -71,5 +73,20 @@ function plot_model_performance(m::MaxEnt)
 		font = :bold,
 		padding = (0, 0, 10, 0))
 	
+		
+	
+	Label(fig[1, 3], L"\times 10^{-4}",
+		fontsize = 18,
+		tellwidth = false, tellheight = false,
+		padding = (250, 0, -410, 0),
+	)
+
+    Label(fig[1, 3], L"\times 10^{-4}",
+    fontsize = 18,
+    tellwidth = false, tellheight = false,
+    padding = (-350, 0, 270, 0),
+    )
+
+
     return fig,[ax1, ax2, ax3]
 end
