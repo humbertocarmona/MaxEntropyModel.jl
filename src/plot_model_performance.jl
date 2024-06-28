@@ -69,9 +69,9 @@ function plot_model_performance(m::MaxEnt)
 			strokecolor = :black,
 		)
 	end
-	Label(fig[1, 1:3, Top()], m.runid, valign = :bottom,
-		font = :bold,
-		padding = (0, 0, 10, 0))
+	# Label(fig[1, 1:3, Top()], m.runid, valign = :bottom,
+	# 	font = :bold,
+	# 	padding = (0, 0, 10, 0))
 	
 		
 	
