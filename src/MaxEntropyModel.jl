@@ -18,21 +18,16 @@ using Utilities
 const LOGGER = getlogger(@__MODULE__)
 function __init__()
     Memento.config!("debug"; fmt="{level}: {msg}")
-    time_now = Dates.format(Dates.now(), "yy-mm-dd_HH_MM")
-    r = @sprintf "%03d" rand(collect(1:100))
-    log_file = "MaxEntropy$(r)_$(time_now).log"
-    hndlr = DefaultHandler(
-        log_file,
-        DefaultFormatter("{level}: {msg}")
-    )
-    push!(LOGGER, hndlr)
-    # Create a handler for the JSON log file
-    # json_handler = DefaultHandler(
+    # time_now = Dates.format(Dates.now(), "yy-mm-dd_HH_MM")
+    # r = @sprintf "%03d" rand(collect(1:100))
+    # log_file = "MaxEntropy$(r)_$(time_now).log"
+    # hndlr = DefaultHandler(
     #     log_file,
-    #     DictFormatter(JSON3.write)
+    #     DefaultFormatter("{level}: {msg}")
+    #     #DictFormatter(JSON3.write)
     # )
-    # Push the json_handler to the logger
-    # push!(LOGGER, json_handler)
+    # push!(LOGGER, hndlr)
+    
     setlevel!(LOGGER, "debug")
     Memento.register(LOGGER)
 end
