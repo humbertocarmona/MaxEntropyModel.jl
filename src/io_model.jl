@@ -2,11 +2,12 @@ function save_model(model::MaxEnt, filename = "none", w = "bson")
 	if filename == "none"
 		filename = model.result_file
 	end
-	if w == "bson"
-		filename = isnothing(findfirst(".bson", filename)) ? "$(filename).bson" : filename
+	if ~isnothing(match(r".+bson$", filename))
 		BSON.@save filename model
 	else
-		filename = isnothing(findfirst(".json", filename)) ? "$(filename).json" : filename
+		if isnothing(match(r".+json$", filename)) 
+			filename = "$(filename).json"
+		end
 		open(filename, "w") do io
 			JSON3.pretty(io, model)
 		end
