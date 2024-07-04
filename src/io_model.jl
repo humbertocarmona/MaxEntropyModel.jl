@@ -68,6 +68,7 @@ function read_model(filename::String)
 		set_model!(model, Dict(obj))
 	elseif ~isnothing(match(r".+bson", filename))
 		m_dic = BSON.load(filename)
+		info("LOGGER","read $filename")
 		k = collect(m_dic)[1]
 		model = k[2]
 	end
@@ -136,6 +137,10 @@ function set_model!(model::MaxEnt, dic::Dict)
 	if size(model.Hj_vals, 1) == 0
 		model.Pj_vals = Array{Float64}(undef, 2^model.nspins)
 		model.Hj_vals = Array{Float64}(undef, 2^model.nspins)
+	end
+	if size(model.n_relax_steps, 1) == 0
+		model.err_x =  zeros(Float64, model.n_relax_steps + 1)
+		model.err_xy = zeros(Float64, model.n_relax_steps + 1)
 	end
 	return nothing
 end

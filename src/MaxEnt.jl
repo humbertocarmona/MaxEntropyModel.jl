@@ -46,6 +46,8 @@ mutable struct MaxEnt
 	α::Float64              # update inertia
 	Δx::Vector{Float64}     # ..
 	Δxy::Vector{Float64}    # ..
+	err_x::Vector{Float64}     # ..
+	err_xy::Vector{Float64}    # ..
 
 	tol_x::Float64
 	tol_xy::Float64
@@ -93,9 +95,10 @@ mutable struct MaxEnt
 
 		model.Δx = zeros(size(model.x_obs))
 		model.Δxy = zeros(size(model.xy_obs))
-		init_parameters!(model)
-		model.β = 1.0
 
+		init_parameters!(model)
+		
+		model.β = 1.0
 		model.H_mean = 0.0 # average energy
 		model.M_mean = 0.0 # average magnetization
 		model.CV = 0.0 # specific heat
@@ -114,11 +117,9 @@ mutable struct MaxEnt
 		model.α = 0.1
 		model.Δx = zeros(size(model.x_obs))
 		model.Δxy = zeros(size(model.xy_obs))
-		model.n_relax_steps = 50
 		model.tol_x = 1.0e-5
 		model.tol_xy = 1.0e-6
 
-		model.H0_vals = zeros(Float64, model.n_relax_steps)
 
 		model.n_samples = 4000 * nspins
 		model.n_rept = 1 * nspins
@@ -140,9 +141,16 @@ mutable struct MaxEnt
 			model.Pj_vals = Array{Float64}(undef, model.n_samples)
 			model.Hj_vals = Array{Float64}(undef, model.n_samples)
 		end
-
+		
+		model.n_relax_steps = 50
+		
+		# it doesn't matter, these are reset in max_entropy_relax
+		model.H0_vals = zeros(Float64, model.n_relax_steps + 1)
+		model.err_x =  zeros(Float64, model.n_relax_steps + 1)
+		model.err_xy = zeros(Float64, model.n_relax_steps + 1)
 		return model
 	end
+
 
 	"""
 	MaxEnt(m::MaxEnt, runid = "test", run_type = 'f')
@@ -199,6 +207,10 @@ function Base.copy(m::MaxEnt)
 	model.α = m.α
 	model.Δx = copy(m.Δx)
 	model.Δxy = copy(m.Δxy)
+	
+	model.err_x =  copy(m.err_x)
+	model.err_xy = copy(m.err_xy)
+
 	model.tol_x = m.tol_x
 	model.tol_xy = m.tol_xy
 	model.n_samples = m.n_samples
