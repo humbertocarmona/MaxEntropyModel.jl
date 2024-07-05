@@ -54,9 +54,13 @@ function write_model(dic::Dict, filename::String = "none";
 end
 
 function read_model(filename::String)
+	bson_file = ~isnothing(match(r".+bson$", filename))
+	json_file = ~isnothing(match(r".+json$", filename))
+	@assert bson_file || json_file "not json or bson"
+
 	debug(LOGGER, "read_model: reading from $filename")
 
-	if ~isnothing(match(r".+json", filename))
+	if json_file
 		obj = JSON3.read(filename)
 		@assert haskey(obj, "model") "$filename must have the \"model\" key"
 		@assert haskey(obj, "nspins") "$filename must have the \"nspins\" key"
@@ -66,13 +70,14 @@ function read_model(filename::String)
 		model = MaxEnt("teste", nspins, 'f')
 
 		set_model!(model, Dict(obj))
-	elseif ~isnothing(match(r".+bson", filename))
+		return model
+	else
 		m_dic = BSON.load(filename)
 		info("LOGGER","read $filename")
 		k = collect(m_dic)[1]
 		model = k[2]
+		return model
 	end
-	return model
 end
 
 function set_model!(model::MaxEnt, dic::Dict)
