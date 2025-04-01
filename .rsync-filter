@@ -1,0 +1,42 @@
+# Exclude temporary files
+- /build/
+- *.tmp
+- **/.git/
+- **/.cache/
+- /.vscode/
+# Exclude log files
+- /logs/
+- /Old/
+- /data/
+- /data/**
+
+- **Manifest.toml
+# Exclude pycache
+- **__pycache__
+
+# Exclude hidden files and directories
+- **.aux
+- **.bbl
+- **.bcf
+- **.blg
+- **.fdb_latexmk
+- **.fls
+- **.log
+- **.out
+- **.run.xml
+- **.synctex.gz
+- **.toc
+
+# Exclude specific directory
+#- /path/to/excluded_directory/
+
+# Exclude specific file
+#- /path/to/excluded_file.txt
+
+# Exclude files larger than 10MB
+#- /path/to/large_files/
+#+ /path/to/large_files/*/
+#- /path/to/large_files/***
+
+- /.git/
+- **/Manifest.toml 
